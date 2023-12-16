@@ -18,18 +18,19 @@ class Writer(models.Model):
 class Book(models.Model):
     title=models.CharField(max_length=255)
     publication=models.CharField(max_length=25)
+    created_at=models.DateTimeField(auto_now_add=True)
     writer=models.ForeignKey(Writer,on_delete=models.PROTECT)
     genre=models.ForeignKey(Genre,on_delete=models.PROTECT)
-    created_at=models.DateTimeField(auto_now_add=True)
 
 class BookList(models.Model):
-    description=models.TextField()
+    description=models.CharField(max_length=1500)
     unitPrice=models.DecimalField(max_digits=6,decimal_places=2)
     discountedPrice=models.DecimalField(max_digits=6,decimal_places=2)
     stock=models.PositiveIntegerField()
+    created_at=models.DateTimeField(auto_now_add=True)
     seller=models.ForeignKey(Seller,on_delete=models.PROTECT)
     book=models.ForeignKey(Book,on_delete=models.PROTECT)
-    created_at=models.DateTimeField(auto_now_add=True)
+    
 
 class Feedback(models.Model):
     rating=models.PositiveSmallIntegerField(validators=[
