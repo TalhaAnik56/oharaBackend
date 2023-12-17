@@ -43,7 +43,8 @@ class Order(models.Model):
     orderStatus=models.CharField(max_length=1,choices=ORDER_STATUS,default=CONFIRMED)
     customer=models.ForeignKey(Customer,on_delete=models.SET_NULL,null=True)
     deliveryFee=models.PositiveSmallIntegerField()
-    coupon_discount=models.PositiveSmallIntegerField()
+    deliveryAddress=models.CharField(max_length=150)
+    couponDiscount=models.PositiveSmallIntegerField()
     createdAt=models.DateTimeField(auto_now_add=True)
 
 
@@ -53,7 +54,10 @@ class OrderItem(models.Model):
     unitPrice=models.PositiveSmallIntegerField()
     order=models.ForeignKey(Order,on_delete=models.CASCADE)
 
-
-    
+class SellerWallet(models.Model):
+    balance=models.PositiveIntegerField()
+    withdrawn=models.PositiveIntegerField()
+    totalAmount=models.PositiveIntegerField()
+    seller=models.OneToOneField(Seller,on_delete=models.CASCADE,primary_key=True)    
         
 
