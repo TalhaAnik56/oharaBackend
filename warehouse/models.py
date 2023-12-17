@@ -8,17 +8,17 @@ from community.models import Seller,Customer
 class Genre(models.Model):
     title=models.CharField(max_length=20)
     description=models.CharField(max_length=1000)
-    featured_book=models.ForeignKey('Book',on_delete=models.SET_NULL,null=True,related_name='+')
+    featuredBook=models.ForeignKey('Book',on_delete=models.SET_NULL,null=True,related_name='+')
 
 class Writer(models.Model):
     name=models.CharField(max_length=35)
     about=models.CharField(max_length=1000)
-    created_at=models.DateTimeField(auto_now_add=True)
+    createdAt=models.DateTimeField(auto_now_add=True)
 
 class Book(models.Model):
     title=models.CharField(max_length=255)
     publication=models.CharField(max_length=25)
-    created_at=models.DateTimeField(auto_now_add=True)
+    createdAt=models.DateTimeField(auto_now_add=True)
     writer=models.ForeignKey(Writer,on_delete=models.PROTECT)
     genre=models.ForeignKey(Genre,on_delete=models.PROTECT)
 
@@ -27,7 +27,7 @@ class BookItem(models.Model):
     unitPrice=models.DecimalField(max_digits=6,decimal_places=2)
     discountedPrice=models.DecimalField(max_digits=6,decimal_places=2)
     stock=models.PositiveIntegerField()
-    created_at=models.DateTimeField(auto_now_add=True)
+    createdAt=models.DateTimeField(auto_now_add=True)
     seller=models.ForeignKey(Seller,on_delete=models.PROTECT)
     book=models.ForeignKey(Book,on_delete=models.PROTECT)
     
