@@ -10,10 +10,24 @@ class Genre(models.Model):
     description=models.CharField(max_length=1000)
     #featuredBook=models.ForeignKey('Book',on_delete=models.SET_NULL,null=True,related_name='+')
 
+    def __str__(self):
+        return self.title
+    class Meta:
+        ordering=['title']
+
+
+
 class Writer(models.Model):
     name=models.CharField(max_length=35)
     about=models.CharField(max_length=1000)
     createdAt=models.DateTimeField(auto_now_add=True)
+
+    def __str__(self) -> str:
+        return self.name
+    class Meta:
+        ordering=['name']
+
+
 
 class Book(models.Model):
     title=models.CharField(max_length=255)
@@ -21,6 +35,13 @@ class Book(models.Model):
     createdAt=models.DateTimeField(auto_now_add=True)
     writer=models.ForeignKey(Writer,on_delete=models.PROTECT)
     genre=models.ForeignKey(Genre,on_delete=models.PROTECT)
+
+    def __str__(self):
+        return self.title
+    class Meta:
+        ordering=['title']
+
+
 
 class BookItem(models.Model):
     description=models.CharField(max_length=1500)
@@ -30,6 +51,10 @@ class BookItem(models.Model):
     createdAt=models.DateTimeField(auto_now_add=True)
     seller=models.ForeignKey(Seller,on_delete=models.PROTECT)
     book=models.ForeignKey(Book,on_delete=models.PROTECT)
+
+    def __str__(self):
+        return self.book.title
+    
     
 
 class Feedback(models.Model):
@@ -39,3 +64,7 @@ class Feedback(models.Model):
     comment=models.CharField(max_length=1000)
     book=models.ForeignKey(Book,on_delete=models.CASCADE)
     customer=models.ForeignKey(Customer,on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.comment
+    
