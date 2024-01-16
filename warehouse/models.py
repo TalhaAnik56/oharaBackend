@@ -8,7 +8,7 @@ from community.models import Seller,Customer
 class Genre(models.Model):
     title=models.CharField(max_length=20)
     description=models.CharField(max_length=1000)
-    featuredBook=models.ForeignKey('Book',on_delete=models.SET_NULL,null=True,related_name='+')
+    #featuredBook=models.ForeignKey('Book',on_delete=models.SET_NULL,null=True,related_name='+')
 
 class Writer(models.Model):
     name=models.CharField(max_length=35)
