@@ -8,12 +8,10 @@ from community.models import Seller,Customer
 class Genre(models.Model):
     title=models.CharField(max_length=20)
     description=models.CharField(max_length=1000)
-    #featuredBook=models.ForeignKey('Book',on_delete=models.SET_NULL,null=True,related_name='+')
+    featuredBook=models.ForeignKey('Book',on_delete=models.SET_NULL,null=True,blank=True,related_name='+')
 
     def __str__(self):
         return self.title
-    class Meta:
-        ordering=['title']
 
 
 
@@ -24,22 +22,18 @@ class Writer(models.Model):
 
     def __str__(self) -> str:
         return self.name
-    class Meta:
-        ordering=['name']
-
 
 
 class Book(models.Model):
     title=models.CharField(max_length=255)
     publication=models.CharField(max_length=25)
-    createdAt=models.DateTimeField(auto_now_add=True)
     writer=models.ForeignKey(Writer,on_delete=models.PROTECT)
     genre=models.ForeignKey(Genre,on_delete=models.PROTECT)
+    createdAt=models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.title
-    class Meta:
-        ordering=['title']
+
 
 
 
