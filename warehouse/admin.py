@@ -46,3 +46,9 @@ class WriterAdmin(admin.ModelAdmin):
 class BookAdmin(admin.ModelAdmin):
     list_display=['title','publication','writer','genre','createdAt']
     ordering=['title']
+
+
+
+@admin.register(models.BookItem)
+class BookItemAdmin(admin.ModelAdmin):
+    list_display=['book','seller','description','unit_price','stock','createdAt']

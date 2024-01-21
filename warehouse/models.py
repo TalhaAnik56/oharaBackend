@@ -38,14 +38,14 @@ class Book(models.Model):
 
 
 class BookItem(models.Model):
+    book=models.ForeignKey(Book,on_delete=models.PROTECT)
+    seller=models.ForeignKey(Seller,on_delete=models.PROTECT)
     description=models.CharField(max_length=1500)
-    unitPrice=models.DecimalField(max_digits=6,decimal_places=2)
-    discountedPrice=models.DecimalField(max_digits=6,decimal_places=2)
+    unit_price=models.DecimalField(max_digits=6,decimal_places=2)
     stock=models.PositiveIntegerField()
     createdAt=models.DateTimeField(auto_now_add=True)
-    seller=models.ForeignKey(Seller,on_delete=models.PROTECT)
-    book=models.ForeignKey(Book,on_delete=models.PROTECT)
-
+   
+    
     def __str__(self):
         return self.book.title
     
