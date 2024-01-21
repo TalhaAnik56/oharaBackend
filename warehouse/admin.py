@@ -13,7 +13,7 @@ from . import models
 
 @admin.register(models.Genre)
 class GenreAdmin(admin.ModelAdmin):
-    list_display=['title','description','featuredBook','book_count']
+    list_display=['title','description','featured_book','book_count']
     ordering=['title']
 
     def get_queryset(self, request):
@@ -29,7 +29,7 @@ class GenreAdmin(admin.ModelAdmin):
 
 @admin.register(models.Writer)
 class WriterAdmin(admin.ModelAdmin):
-    list_display=['name','about','createdAt','book_count']
+    list_display=['name','about','created_at','book_count']
     ordering=['name']
 
     def get_queryset(self, request: HttpRequest) -> QuerySet[Any]:
@@ -44,11 +44,11 @@ class WriterAdmin(admin.ModelAdmin):
 
 @admin.register(models.Book)
 class BookAdmin(admin.ModelAdmin):
-    list_display=['title','publication','writer','genre','createdAt']
+    list_display=['title','publication','writer','genre','created_at']
     ordering=['title']
 
 
 
 @admin.register(models.BookItem)
 class BookItemAdmin(admin.ModelAdmin):
-    list_display=['book','seller','description','unit_price','stock','createdAt']
+    list_display=['book','seller','description','unit_price','stock','created_at']

@@ -8,7 +8,7 @@ from community.models import Seller,Customer
 class Genre(models.Model):
     title=models.CharField(max_length=20)
     description=models.CharField(max_length=1000)
-    featuredBook=models.ForeignKey('Book',on_delete=models.SET_NULL,null=True,blank=True,related_name='+')
+    featured_book=models.ForeignKey('Book',on_delete=models.SET_NULL,null=True,blank=True,related_name='+')
 
     def __str__(self):
         return self.title
@@ -18,7 +18,7 @@ class Genre(models.Model):
 class Writer(models.Model):
     name=models.CharField(max_length=35)
     about=models.CharField(max_length=1000)
-    createdAt=models.DateTimeField(auto_now_add=True)
+    created_at=models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
         return self.name
@@ -29,7 +29,7 @@ class Book(models.Model):
     publication=models.CharField(max_length=25)
     writer=models.ForeignKey(Writer,on_delete=models.PROTECT)
     genre=models.ForeignKey(Genre,on_delete=models.PROTECT)
-    createdAt=models.DateTimeField(auto_now_add=True)
+    created_at=models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.title
@@ -43,7 +43,7 @@ class BookItem(models.Model):
     description=models.CharField(max_length=1500)
     unit_price=models.DecimalField(max_digits=6,decimal_places=2)
     stock=models.PositiveIntegerField()
-    createdAt=models.DateTimeField(auto_now_add=True)
+    created_at=models.DateTimeField(auto_now_add=True)
    
     
     def __str__(self):

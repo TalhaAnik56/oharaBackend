@@ -5,11 +5,11 @@ from . import models
 
 @admin.register(models.Customer)
 class CustomerAdmin(admin.ModelAdmin):
-    list_display=['name','address','phoneNo','birthDate','joinedAt']
+    list_display=['name','address','phone_no','birth_date','joined_at']
     ordering=['name']
 
 
 @admin.register(models.Seller)
 class SellerAdmin(admin.ModelAdmin):
-    list_display=['brandName','address','phoneNo','nid','birthDate','joinedAt']
-    ordering=['brandName','address']
+    list_display=['brand_name','address','phone_no','nid','birth_date','joined_at']
+    ordering=['brand_name','address']
