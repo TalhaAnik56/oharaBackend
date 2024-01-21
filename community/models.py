@@ -6,7 +6,10 @@ class Customer(models.Model):
     address=models.CharField(max_length=50)
     phoneNo=models.CharField(max_length=12)
     birthDate=models.DateField(null=True)
-    joined_at=models.DateTimeField(auto_now_add=True)
+    joinedAt=models.DateTimeField(auto_now_add=True)
+
+    def __str__(self) -> str:
+        return self.name
 
 
 class Seller(models.Model):
@@ -15,7 +18,10 @@ class Seller(models.Model):
     phoneNo=models.CharField(max_length=12)
     nid=models.CharField(max_length=30)
     birthDate=models.DateField(null=True)
-    joined_at=models.DateTimeField(auto_now_add=True)
+    joinedAt=models.DateTimeField(auto_now_add=True)
+
+    def __str__(self) -> str:
+        return self.brandName
 
 
 
