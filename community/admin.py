@@ -1,17 +1,27 @@
 from django.contrib import admin
 from django.db.models import Count
 from django.urls import reverse
-from django.utils.html import urlencode,format_html
+from django.utils.html import format_html, urlencode
+
 from . import models
 
 # Register your models here.
 
 @admin.register(models.Customer)
 class CustomerAdmin(admin.ModelAdmin):
-    list_display=['name','address','phone_no','birth_date','joined_at']
+    list_display=['name','address','phone_no','birth_date','joined_at','feedback_given']
     search_fields=['name__istartswith']
     ordering=['name']
     list_per_page=10
+    
+    
+    def get_queryset(self, request):
+        return super().get_queryset(request).annotate(feedback_given=Count('feedback'))
+    
+    @admin.display(ordering='feedback_given')
+    def feedback_given(self,customer):
+        url=reverse('admin:warehouse_feedback_changelist')+'?'+urlencode({'customer__id':str(customer.id)})
+        return format_html('<a href="{}">{}</a>',url,customer.feedback_given)
 
 
 @admin.register(models.Seller)
