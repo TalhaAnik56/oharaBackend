@@ -39,13 +39,16 @@ class Order(models.Model):
     PAYMENT_STATUS=[(PENDING,'pending'),(RECEIVED,'received'),(FAILED,'failed')]
     ORDER_STATUS=[(CONFIRMED,'confirmed'),(DELIVERY_ONGOING,'delivery ongoing'),(DELIVERED,'delivered'),(FAILED,'failed')]
 
+    customer=models.ForeignKey(Customer,on_delete=models.SET_NULL,null=True)
     payment_status=models.CharField(max_length=1,choices=PAYMENT_STATUS,default=PENDING)
     order_status=models.CharField(max_length=1,choices=ORDER_STATUS,default=CONFIRMED)
-    customer=models.ForeignKey(Customer,on_delete=models.SET_NULL,null=True)
     delivery_fee=models.PositiveSmallIntegerField()
     delivery_address=models.CharField(max_length=150)
     coupon_discount=models.PositiveSmallIntegerField(default=0)
     created_at=models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return str(self.id)
 
 
 class OrderItem(models.Model):

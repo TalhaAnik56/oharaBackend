@@ -47,7 +47,7 @@ class BookItem(models.Model):
    
     
     def __str__(self):
-        return self.book.title
+        return self.book.title+'--'+self.seller.brand_name
     
     class Meta:
         unique_together = ['book', 'seller']
