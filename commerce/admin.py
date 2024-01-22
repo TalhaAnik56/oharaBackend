@@ -42,7 +42,6 @@ class OrderAdmin(admin.ModelAdmin):
     search_fields=['customer__name__istartswith']
     ordering=['-created_at']
     list_per_page=10
-
     
     def get_queryset(self, request):
         #ekhane Sum function e distinct=True use korle same book item koyekta alada alada order er orderItem hishabe thakleo 1 barer beshi 
@@ -57,6 +56,21 @@ class OrderAdmin(admin.ModelAdmin):
         url=reverse('admin:commerce_orderitem_changelist')+'?'+urlencode({'order__id':str(order.id)})
         return format_html('<a href={}>{}</a>',url,order.item_count)
     
+    @admin.display(ordering='total_amount')
     def total_amount(self,order):
         return order.total_amount
     
+
+
+@admin.register(models.Coupon)
+class CouponAdmin(admin.ModelAdmin):
+    list_display=['coupon_code','discount','minimum_purchase','seller']
+    autocomplete_fields=['seller']    
+
+
+
+@admin.register(models.SellerWallet)
+class SellerWalletAdmin(admin.ModelAdmin):
+    list_display=['seller','balance','withdrawn','total_earned']
+    autocomplete_fields=['seller']
+    search_fields=['seller__brand_name__istartswith']
