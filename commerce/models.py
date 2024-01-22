@@ -3,7 +3,6 @@ from django.core.validators import MaxValueValidator
 from warehouse.models import BookItem
 from community.models import Seller,Customer
 
-
 # Create your models here.
 
 class Coupon(models.Model):
@@ -18,6 +17,7 @@ class Cart(models.Model):
     delivery_fee=models.PositiveSmallIntegerField(default=50)
     coupon_discount=models.PositiveSmallIntegerField(default=0)
     created_at=models.DateTimeField(auto_now_add=True)
+
 
 
 class CartItem(models.Model):
@@ -51,11 +51,14 @@ class Order(models.Model):
         return str(self.id)
 
 
+
 class OrderItem(models.Model):
     book_item=models.ForeignKey(BookItem,on_delete=models.SET_NULL,null=True)
     quantity=models.PositiveSmallIntegerField(validators=[MaxValueValidator(30,"You can't order more than 30 pieces")])
     unit_price=models.PositiveSmallIntegerField()
     order=models.ForeignKey(Order,on_delete=models.CASCADE)
+
+
 
 class SellerWallet(models.Model):
     balance=models.PositiveIntegerField()

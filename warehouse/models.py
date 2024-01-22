@@ -4,7 +4,6 @@ from community.models import Seller,Customer
 
 # Create your models here.
 
-
 class Genre(models.Model):
     title=models.CharField(max_length=20)
     description=models.CharField(max_length=1000)
@@ -24,6 +23,7 @@ class Writer(models.Model):
         return self.name
 
 
+
 class Book(models.Model):
     title=models.CharField(max_length=255)
     publication=models.CharField(max_length=25)
@@ -36,7 +36,6 @@ class Book(models.Model):
 
 
 
-
 class BookItem(models.Model):
     book=models.ForeignKey(Book,on_delete=models.PROTECT)
     seller=models.ForeignKey(Seller,on_delete=models.PROTECT)
@@ -45,7 +44,6 @@ class BookItem(models.Model):
     stock=models.PositiveIntegerField()
     created_at=models.DateTimeField(auto_now_add=True)
    
-    
     def __str__(self):
         return self.book.title+'--'+self.seller.brand_name
     

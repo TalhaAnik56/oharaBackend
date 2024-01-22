@@ -1,4 +1,3 @@
-from typing import Any
 from django.contrib import admin
 from django.db.models import Count
 from django.urls import reverse
@@ -6,7 +5,6 @@ from django.utils.html import urlencode,format_html
 from . import models
 
 #admin er name:admin,password:talha
-
 # Register your models here.
 
 @admin.register(models.Genre)
@@ -64,7 +62,6 @@ class BookAdmin(admin.ModelAdmin):
         
 
 
-
 @admin.register(models.BookItem)
 class BookItemAdmin(admin.ModelAdmin):
     list_display=['book','seller','description','unit_price','stock','created_at']
@@ -73,6 +70,7 @@ class BookItemAdmin(admin.ModelAdmin):
     search_fields=['book__title__istartswith']
     ordering=['book__title']
     list_filter=['created_at']
+
 
 
 @admin.register(models.Feedback)

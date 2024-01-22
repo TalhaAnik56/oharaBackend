@@ -2,26 +2,30 @@ from django.contrib import admin
 from django.db.models import Count
 from django.urls import reverse
 from django.utils.html import format_html, urlencode
-
 from . import models
 
 # Register your models here.
 
 @admin.register(models.Customer)
 class CustomerAdmin(admin.ModelAdmin):
-    list_display=['name','address','phone_no','birth_date','joined_at','feedback_given']
+    list_display=['name','address','phone_no','birth_date','joined_at','feedback_given','order_count']
     search_fields=['name__istartswith']
     ordering=['name']
     list_per_page=10
     
-    
     def get_queryset(self, request):
-        return super().get_queryset(request).annotate(feedback_given=Count('feedback'))
+        return super().get_queryset(request).annotate(feedback_given=Count('feedback',distinct=True),order_count=Count('order',distinct=True))
     
     @admin.display(ordering='feedback_given')
     def feedback_given(self,customer):
         url=reverse('admin:warehouse_feedback_changelist')+'?'+urlencode({'customer__id':str(customer.id)})
         return format_html('<a href="{}">{}</a>',url,customer.feedback_given)
+    
+    @admin.display(ordering='order_count')
+    def order_count(self,customer):
+        url=reverse('admin:commerce_order_changelist')+'?'+urlencode({'customer__id':str(customer.id)})
+        return format_html('<a href="{}">{}</a>',url,customer.order_count)
+
 
 
 @admin.register(models.Seller)
@@ -31,7 +35,6 @@ class SellerAdmin(admin.ModelAdmin):
     ordering=['brand_name','address']
     list_per_page=10
     
-
     def get_queryset(self, request):
         return super().get_queryset(request).annotate(book_count=Count('bookitem'))
 

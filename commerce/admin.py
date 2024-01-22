@@ -21,13 +21,13 @@ class OrderItemAdmin(admin.ModelAdmin):
 
 
 
-
 class OrderItemTabularInline(admin.TabularInline):
     min_num=1
     max_num=20
     extra=0
     model=models.OrderItem
     autocomplete_fields=['book_item']
+
 
 
 @admin.register(models.Order)
@@ -44,10 +44,8 @@ class OrderAdmin(admin.ModelAdmin):
     ordering=['-created_at']
     list_per_page=10
 
-
     def get_queryset(self, request):
         return super().get_queryset(request).annotate(item_count=Count('orderitem'))
-    
     
     @admin.display(ordering='item_count')
     def item_count(self,order):
