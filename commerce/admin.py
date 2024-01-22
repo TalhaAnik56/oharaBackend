@@ -1,6 +1,5 @@
-from typing import Any
 from django.contrib import admin
-from django.db.models import Count,F,ExpressionWrapper,DecimalField
+from django.db.models import Count,F,ExpressionWrapper,DecimalField,Sum,Subquery,OuterRef
 from django.urls import reverse
 from django.utils.html import urlencode,format_html
 from . import models
@@ -34,9 +33,9 @@ class OrderItemTabularInline(admin.TabularInline):
 class OrderAdmin(admin.ModelAdmin):
     inlines=[OrderItemTabularInline]
     list_display=['id','customer','payment_status',
-                  'order_status','delivery_fee',
-                  'delivery_address','coupon_discount',
-                  'item_count','created_at'
+                  'order_status','delivery_address',
+                  'item_count','delivery_fee','coupon_discount',
+                   'total_amount','created_at'
                   ]
     list_select_related=['customer']
     autocomplete_fields=['customer']
@@ -44,10 +43,20 @@ class OrderAdmin(admin.ModelAdmin):
     ordering=['-created_at']
     list_per_page=10
 
-    def get_queryset(self, request):
-        return super().get_queryset(request).annotate(item_count=Count('orderitem'))
     
+    def get_queryset(self, request):
+        #ekhane Sum function e distinct=True use korle same book item koyekta alada alada order er orderItem hishabe thakleo 1 barer beshi 
+        #count kore na, mane 1 ta order er jonne oi book_item er price count kore,baki order gulate same book item thakleo count kore na,
+        #se karone total amount calculation e vul hoy,ai karone distinct=True muche diyechi.
+
+        total_amount=Sum(ExpressionWrapper(F('orderitem__quantity')*F('orderitem__unit_price'),output_field=DecimalField()))+F('delivery_fee')-F('coupon_discount')
+        return super().get_queryset(request).annotate(item_count=Count('orderitem'),total_amount=total_amount)
+
     @admin.display(ordering='item_count')
     def item_count(self,order):
         url=reverse('admin:commerce_orderitem_changelist')+'?'+urlencode({'order__id':str(order.id)})
         return format_html('<a href={}>{}</a>',url,order.item_count)
+    
+    def total_amount(self,order):
+        return order.total_amount
+    
