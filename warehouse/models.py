@@ -1,5 +1,5 @@
 from django.db import models
-from django.core.validators import MaxValueValidator
+from django.core.validators import MaxValueValidator,MinValueValidator
 from community.models import Seller,Customer
 
 # Create your models here.
@@ -49,14 +49,18 @@ class BookItem(models.Model):
     def __str__(self):
         return self.book.title
     
+    class Meta:
+        unique_together = ['book', 'seller']
+    
     
 
 class Feedback(models.Model):
-    rating=models.PositiveSmallIntegerField(validators=[
+    book=models.ForeignKey(Book,on_delete=models.CASCADE)
+    comment=models.CharField(max_length=1000)
+    rating=models.DecimalField(max_digits=4,decimal_places=2,validators=[
+            MinValueValidator(1,"Rating cannot be less than 1"),
             MaxValueValidator(10, "Rating cannot exceed 10")
         ],null=True)
-    comment=models.CharField(max_length=1000)
-    book=models.ForeignKey(Book,on_delete=models.CASCADE)
     customer=models.ForeignKey(Customer,on_delete=models.CASCADE)
 
     def __str__(self):
