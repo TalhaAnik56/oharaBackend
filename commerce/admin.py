@@ -10,6 +10,7 @@ from . import models
 class OrderItemAdmin(admin.ModelAdmin):
     list_display=['book_item','unit_price','quantity','individual_total','order',]
     autocomplete_fields=['book_item']
+    list_per_page=10
 
     def get_queryset(self, request):
         individual_total=ExpressionWrapper(F('quantity')*F('unit_price'),output_field=DecimalField())

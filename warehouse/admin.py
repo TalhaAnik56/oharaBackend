@@ -1,5 +1,7 @@
+from typing import Any
 from django.contrib import admin
 from django.db.models import Count
+from django.db.models.query import QuerySet
 from django.urls import reverse
 from django.utils.html import urlencode,format_html
 from . import models
@@ -46,6 +48,7 @@ class BookAdmin(admin.ModelAdmin):
     ordering=['title']
     search_fields=['title__istartswith']
     autocomplete_fields=['writer','genre']
+    list_per_page=10
 
     def get_queryset(self, request):
         return super().get_queryset(request).annotate(book_item_count=Count('bookitem',distinct=True),feedback_count=Count('feedback',distinct=True))
@@ -59,7 +62,24 @@ class BookAdmin(admin.ModelAdmin):
     def feedback_count(self,book):
         url=reverse('admin:warehouse_feedback_changelist')+'?'+urlencode({'book__id':str(book.id)})
         return format_html('<a href="{}">{}</a>',url,book.feedback_count)
-        
+
+
+
+class StockFilter(admin.SimpleListFilter):
+    title='Stock'
+    parameter_name='stock'
+
+    def lookups(self, request, model_admin):
+        return [('<=10',"Low"),('<=30',"Medium"),('>=31',"High")]
+
+    def queryset(self, request, queryset):
+        if self.value()=="<=10":
+            return queryset.filter(stock__lte=10)
+        elif self.value()=='<=30':
+            return queryset.filter(stock__gt=10,stock__lte=30)
+        elif self.value()=='>=31':
+            return queryset.filter(stock__gte=31)
+
 
 
 @admin.register(models.BookItem)
@@ -69,7 +89,8 @@ class BookItemAdmin(admin.ModelAdmin):
     list_select_related=['book']
     search_fields=['book__title__istartswith']
     ordering=['book__title']
-    list_filter=['created_at']
+    list_filter=['created_at',StockFilter]
+    list_per_page=10
 
 
 

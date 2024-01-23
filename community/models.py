@@ -2,7 +2,7 @@ from django.db import models
 
 
 class Customer(models.Model):
-    name=models.CharField(max_length=10)
+    name=models.CharField(max_length=30)
     address=models.CharField(max_length=50)
     phone_no=models.CharField(max_length=12)
     birth_date=models.DateField(null=True)
