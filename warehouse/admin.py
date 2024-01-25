@@ -44,7 +44,7 @@ class WriterAdmin(admin.ModelAdmin):
 
 @admin.register(models.Book)
 class BookAdmin(admin.ModelAdmin):
-    list_display=['title','publication','writer','genre','created_at','book_item_count','feedback_count']
+    list_display=['id','title','publication','writer','genre','created_at','book_item_count','feedback_count']
     ordering=['title']
     search_fields=['title__istartswith']
     autocomplete_fields=['writer','genre']
