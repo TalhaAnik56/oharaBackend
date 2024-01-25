@@ -1,5 +1,12 @@
 from rest_framework import serializers
-from .models import Writer,Book,Genre
+from .models import Writer,Book,Genre,Feedback
+
+class WriterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Writer
+        fields=['id','name','about','created_at','book_count']
+
+    book_count=serializers.IntegerField(read_only=True)    
 
 
 
@@ -7,7 +14,7 @@ class BookSerializer(serializers.ModelSerializer):
     class Meta:
         model=Book
         fields=['id','title','publication','writer','genre','book_item_count','created_at',]
-        
+
     book_item_count=serializers.IntegerField(read_only=True)
 
     def to_representation(self, book):

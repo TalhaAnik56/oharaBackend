@@ -3,10 +3,40 @@ from django.db.models import Count
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import BookSerializer
+from .serializers import BookSerializer,WriterSerializer
 from .models import Book,Writer
 
 # Create your views here.
+
+@api_view(['GET','POST'])
+def writer_list(request):
+   if request.method=='GET':
+      queryset=Writer.objects.all().annotate(book_count=Count('book')).order_by('name')
+      serializer=WriterSerializer(queryset,many=True)
+      return Response(serializer.data)
+   
+   elif request.method=='POST':
+      serializer=WriterSerializer(data=request.data)
+      serializer.is_valid(raise_exception=True)
+      serializer.save()
+      return Response(serializer.data,status=status.HTTP_201_CREATED)
+
+
+@api_view(['GET','DELETE'])
+def writer_details(request,pk):
+   writer=get_object_or_404(Writer.objects.all().annotate(book_count=Count('book')),pk=pk)
+
+   if request.method=='GET':
+      serializer=WriterSerializer(writer)
+      return Response(serializer.data)
+   
+   elif request.method=='DELETE':
+      if writer.book_set.count()>0:
+         return Response({"detail":"You have to delete the books first"},status=status.HTTP_405_METHOD_NOT_ALLOWED)
+      writer.delete()
+      return Response({"detail":"The writer has been deleted."},status=status.HTTP_204_NO_CONTENT)
+
+
 
 @api_view(['GET','POST'])
 def book_list(request):

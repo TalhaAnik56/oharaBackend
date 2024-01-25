@@ -15,7 +15,7 @@ class Genre(models.Model):
 
 
 class Writer(models.Model):
-    name=models.CharField(max_length=35)
+    name=models.CharField(max_length=35,unique=True)
     about=models.CharField(max_length=1000)
     created_at=models.DateTimeField(auto_now_add=True)
 
