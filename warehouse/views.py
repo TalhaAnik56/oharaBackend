@@ -3,8 +3,8 @@ from django.db.models import Count
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import BookSerializer,WriterSerializer,GenreSerializer
-from .models import Book,Writer,Genre
+from .serializers import BookSerializer,WriterSerializer,GenreSerializer,FeedbackSerializer
+from .models import Book,Writer,Genre,Feedback
 
 # Create your views here.
 
@@ -99,3 +99,18 @@ def book_details(request,pk):
       book.delete()
       return Response({"detail":"The book is deleted"},status=status.HTTP_204_NO_CONTENT)
 
+
+
+@api_view(['GET','POST'])
+def feedback_list(request,pk):
+   if request.method=='GET':
+      queryset=Feedback.objects.all().select_related('book').select_related('customer').filter(book_id=pk)
+      serializer=FeedbackSerializer(queryset,many=True)
+      return Response(serializer.data)
+   
+   elif request.method=='POST':
+      serializer=FeedbackSerializer(data=request.data)
+      serializer.is_valid(raise_exception=True)
+      serializer.save()
+      return Response(serializer.data,status=status.HTTP_201_CREATED)
+   

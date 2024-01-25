@@ -30,6 +30,19 @@ class BookSerializer(serializers.ModelSerializer):
     def to_representation(self, book):
         representation = super().to_representation(book)
         representation['writer'] = book.writer.name
-        representation['genre']=book.genre.title
+        representation['genre'] = book.genre.title
         return representation
     
+
+
+class FeedbackSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Feedback
+        fields=['id','book','comment','rating','customer']
+
+    def to_representation(self, feedback):
+        representation = super().to_representation(feedback)
+        representation['book']=feedback.book.title
+        representation['customer']=feedback.customer.name
+        return representation
+            
