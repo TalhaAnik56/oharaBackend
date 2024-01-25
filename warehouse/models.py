@@ -5,7 +5,7 @@ from community.models import Seller,Customer
 # Create your models here.
 
 class Genre(models.Model):
-    title=models.CharField(max_length=20)
+    title=models.CharField(max_length=20,unique=True)
     description=models.CharField(max_length=1000)
     featured_book=models.ForeignKey('Book',on_delete=models.SET_NULL,null=True,blank=True,related_name='+')
 

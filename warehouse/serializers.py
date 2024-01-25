@@ -1,6 +1,16 @@
 from rest_framework import serializers
 from .models import Writer,Book,Genre,Feedback
 
+
+class GenreSerializer(serializers.ModelSerializer):
+    class Meta:
+        model=Genre
+        fields=['id','title','description','featured_book','book_count']
+
+    book_count=serializers.IntegerField(read_only=True)
+
+
+
 class WriterSerializer(serializers.ModelSerializer):
     class Meta:
         model=Writer
