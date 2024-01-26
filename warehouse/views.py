@@ -73,7 +73,7 @@ def writer_details(request,pk):
 @api_view(['GET','POST'])
 def book_list(request):
     if request.method=='GET':
-      queryset=Book.objects.all().annotate(book_item_count=Count('bookitem')).select_related('genre').select_related('writer').order_by('title')
+      queryset=Book.objects.all().annotate(book_item_count=Count('bookitem',distinct=True),feedback_count=Count('feedback',distinct=True)).select_related('genre').select_related('writer').order_by('title')
       serializer=BookSerializer(queryset,many=True)
       return Response(serializer.data)
     
@@ -114,3 +114,4 @@ def feedback_list(request,pk):
       serializer.save()
       return Response(serializer.data,status=status.HTTP_201_CREATED)
    
+
