@@ -6,7 +6,7 @@ from community.models import Seller,Customer
 
 class Genre(models.Model):
     title=models.CharField(max_length=20,unique=True)
-    description=models.CharField(max_length=1000)
+    description=models.TextField()
     featured_book=models.ForeignKey('Book',on_delete=models.SET_NULL,null=True,blank=True,related_name='+')
 
     def __str__(self):
@@ -16,7 +16,7 @@ class Genre(models.Model):
 
 class Writer(models.Model):
     name=models.CharField(max_length=35,unique=True)
-    about=models.CharField(max_length=1000)
+    about=models.TextField()
     created_at=models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
