@@ -1,14 +1,22 @@
-from django.urls import path,include
-from rest_framework.routers import DefaultRouter
+from django.urls import include, path
+from rest_framework_nested.routers import DefaultRouter, NestedDefaultRouter
+
 from . import views
 
+router = DefaultRouter()
+router.register("genres", views.GenreViewSet)
+router.register("writers", views.WriterViewSet)
+router.register("books", views.BookViewSet)
 
-router=DefaultRouter()
-router.register('genres',views.GenreViewSet)
-router.register('writers',views.WriterViewSet)
-router.register('books',views.BookViewSet)
+book_item_router = NestedDefaultRouter(router, "books", lookup="book")
+book_item_router.register("bookitems", views.BookItemViewSet, basename="bookitem")
 
-urlpatterns=[
-    path('',include(router.urls)),
-    path('books/<int:pk>/feedbacks/',views.feedback_list)
+feedback_router = NestedDefaultRouter(router, "books", lookup="book")
+feedback_router.register("feedbacks", views.FeedbackViewSet, basename="book-feedback")
+
+
+urlpatterns = [
+    path("", include(router.urls)),
+    path("", include(book_item_router.urls)),
+    path("", include(feedback_router.urls)),
 ]
