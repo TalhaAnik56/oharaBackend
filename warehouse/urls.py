@@ -6,7 +6,7 @@ from . import views
 router = DefaultRouter()
 router.register("genres", views.GenreViewSet)
 router.register("writers", views.WriterViewSet)
-router.register("books", views.BookViewSet)
+router.register("books", views.BookViewSet, basename="book")
 
 book_item_router = NestedDefaultRouter(router, "books", lookup="book")
 book_item_router.register("bookitems", views.BookItemViewSet, basename="bookitem")

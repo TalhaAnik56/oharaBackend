@@ -1,11 +1,13 @@
 from django.db.models import Count
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from .models import Book, BookItem, Feedback, Genre, Writer
+from .paginations import CustomPagination
 from .serializers import (
     BookItemSerializer,
     BookSerializer,
@@ -54,16 +56,30 @@ class WriterViewSet(ModelViewSet):
 
 
 class BookViewSet(ModelViewSet):
-    queryset = (
-        Book.objects.all()
-        .annotate(
-            book_item_count=Count("bookitem", distinct=True),
-            feedback_count=Count("feedback", distinct=True),
+    def get_queryset(self):
+        page_size = self.request.query_params.get("page_size")
+        if page_size is not None:
+            CustomPagination.page_size = page_size
+            self.pagination_class = CustomPagination
+
+        queryset = (
+            Book.objects.all()
+            .annotate(
+                book_item_count=Count("bookitem", distinct=True),
+                feedback_count=Count("feedback", distinct=True),
+            )
+            .select_related("genre")
+            .select_related("writer")
+            .order_by("title")
         )
-        .select_related("genre")
-        .select_related("writer")
-        .order_by("title")
-    )
+        return queryset
+
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = ["genre_id", "writer_id"]
+    search_fields = ["title", "genre__title", "publication"]
+    ordering_fields = ["title", "created_at"]
+
+    pagination_class = CustomPagination
     serializer_class = BookSerializer
 
     def destroy(self, request, *args, **kwargs):
