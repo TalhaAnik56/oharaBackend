@@ -65,6 +65,7 @@ class Feedback(models.Model):
         null=True,
     )
     customer = models.ForeignKey(Customer, on_delete=models.CASCADE)
+    posted_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return self.comment

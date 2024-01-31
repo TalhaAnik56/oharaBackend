@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "warehouse",
     "community",
     "commerce",
+    "widespread",
 ]
 
 

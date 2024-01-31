@@ -1,8 +1,9 @@
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.viewsets import ModelViewSet
 
+from widespread.paginations import CustomPagination
+
 from .models import Customer, Seller
-from .paginations import CustomPagination
 from .serializers import CustomerSerializer, SellerSerializer
 
 # Create your views here.
@@ -23,7 +24,7 @@ class CustomerViewSet(ModelViewSet):
     pagination_class = CustomPagination
     filter_backends = [OrderingFilter, SearchFilter]
     ordering_fields = ["address", "birth_date", "joined_at"]
-    search_fields = ["name"]
+    search_fields = ["name", "address"]
 
 
 class SellerViewSet(ModelViewSet):
