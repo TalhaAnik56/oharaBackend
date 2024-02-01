@@ -1,6 +1,8 @@
 from django.db.models import Count
 from django.shortcuts import get_object_or_404
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
+from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
@@ -71,8 +73,14 @@ class BookViewSet(ModelViewSet):
             .order_by("title")
         )
 
+        return queryset
+
     serializer_class = BookSerializer
     pagination_class = CustomPagination
+    filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
+    filterset_fields = ["genre", "writer"]
+    search_fields = ["title", "writer__name", "genre__title"]
+    ordering_fields = ["created_at"]
 
     def destroy(self, request, *args, **kwargs):
         book = get_object_or_404(Book, pk=kwargs["pk"])
@@ -106,6 +114,8 @@ class BookItemViewSet(ModelViewSet):
 
     serializer_class = BookItemSerializer
     pagination_class = CustomPagination
+    filter_backends = [OrderingFilter]
+    ordering_fields = ["unit_price", "stock"]
 
     def get_serializer_context(self):
         return {"book_id": self.kwargs["book_pk"]}
