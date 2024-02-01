@@ -116,6 +116,7 @@ class StockFilter(admin.SimpleListFilter):
 @admin.register(models.BookItem)
 class BookItemAdmin(admin.ModelAdmin):
     list_display = [
+        "id",
         "book",
         "seller",
         "description",

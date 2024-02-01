@@ -45,11 +45,11 @@ class BookItem(models.Model):
     stock = models.PositiveIntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
 
-    def __str__(self):
-        return self.book.title + "--" + self.seller.brand_name
+    # def __str__(self):
+    #     return self.book.title + "--" + self.seller.brand_name
 
     class Meta:
-        unique_together = ["book", "seller"]
+        unique_together = [["book", "seller"]]
 
 
 class Feedback(models.Model):

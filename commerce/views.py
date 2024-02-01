@@ -7,7 +7,12 @@ from rest_framework.mixins import (
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
 
 from .models import Cart, CartItem
-from .serializers import AddCartItemSerializer, CartItemSerializer, CartSerializer
+from .serializers import (
+    AddCartItemSerializer,
+    CartItemSerializer,
+    CartSerializer,
+    UpdateCartItemSerializer,
+)
 
 # Create your views here.
 
@@ -19,11 +24,17 @@ class CartViewSet(
     DestroyModelMixin,
     GenericViewSet,
 ):
-    queryset = Cart.objects.all()
+    queryset = (
+        Cart.objects.all()
+        .prefetch_related("cartitem_set__book_item__seller")
+        .prefetch_related("cartitem_set__book_item__book")
+    )
     serializer_class = CartSerializer
 
 
 class CartItemViewSet(ModelViewSet):
+    http_method_names = ["get", "post", "patch", "delete"]
+
     def get_queryset(self):
         queryset = (
             CartItem.objects.filter(cart_id=self.kwargs["cart_pk"])
@@ -36,6 +47,8 @@ class CartItemViewSet(ModelViewSet):
     def get_serializer_class(self):
         if self.request.method == "POST":
             return AddCartItemSerializer
+        elif self.request.method == "PATCH":
+            return UpdateCartItemSerializer
         return CartItemSerializer
 
     def get_serializer_context(self):

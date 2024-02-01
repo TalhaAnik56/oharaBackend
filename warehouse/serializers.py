@@ -49,7 +49,17 @@ class BookItemSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         book_id = self.context["book_id"]
-        book_item = BookItem.objects.create(**validated_data, book_id=book_id)
+        seller = validated_data["seller"]
+
+        book_item, created = BookItem.objects.get_or_create(
+            book_id=book_id, seller=seller, defaults=validated_data
+        )
+
+        if not created:
+            raise serializers.ValidationError(
+                "This book and seller combination already exists."
+            )
+
         return book_item
 
 

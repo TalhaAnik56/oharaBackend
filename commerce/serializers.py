@@ -1,22 +1,56 @@
 from rest_framework import serializers
 
+from warehouse.models import Book, BookItem
+
 from .models import Cart, CartItem
 
 
-class CartSerializer(serializers.ModelSerializer):
+class SimpleBookItemSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Cart
-        fields = ["id", "delivery_fee", "coupon_discount", "created_at"]
+        model = BookItem
+        fields = ["id", "book", "seller", "unit_price"]
 
-    id = serializers.UUIDField(read_only=True)
+    book = serializers.StringRelatedField()
+    seller = serializers.StringRelatedField()
 
 
 class CartItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = CartItem
-        fields = ["book_item", "unit_price", "quantity", "cart"]
+        fields = ["id", "book_item", "unit_price", "quantity", "total_price"]
 
-    book_item = serializers.StringRelatedField(read_only=True)
+    book_item = SimpleBookItemSerializer()
+    total_price = serializers.SerializerMethodField(method_name="calculated_price")
+
+    def calculated_price(self, cart_item):
+        return cart_item.book_item.unit_price * cart_item.quantity
+
+
+class CartSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Cart
+        fields = [
+            "id",
+            "delivery_fee",
+            "coupon_discount",
+            "created_at",
+            "cartitem_set",
+            "total_price",
+        ]
+
+    id = serializers.UUIDField(read_only=True)
+    cartitem_set = CartItemSerializer(many=True, read_only=True)
+    total_price = serializers.SerializerMethodField(
+        method_name="calculated_price", read_only=True
+    )
+
+    def calculated_price(self, cart: Cart):
+        prices = [
+            item.book_item.unit_price * item.quantity
+            for item in cart.cartitem_set.all()
+        ]
+        total = sum(prices) + cart.delivery_fee - cart.coupon_discount
+        return total
 
 
 class AddCartItemSerializer(serializers.ModelSerializer):
@@ -33,8 +67,7 @@ class AddCartItemSerializer(serializers.ModelSerializer):
             cart_item = CartItem.objects.get(
                 cart_id=cart_id, book_item__id=book_item.id
             )
-            print(cart_item.book_item)
-            cart_item.quantity = cart_item.quantity + quantity
+            cart_item.quantity += quantity
             cart_item.save()
             self.instance = cart_item
 
@@ -45,3 +78,18 @@ class AddCartItemSerializer(serializers.ModelSerializer):
             self.instance = cart_item
 
         return self.instance
+
+
+class UpdateCartItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CartItem
+        fields = ["quantity"]
+
+    # jodi amon chai je +1 kore kore quantity barabe ba ai type tahole aita use korte hobe
+    # def save(self, **kwargs):
+    #     quantity = self.validated_data["quantity"]
+    #     cart_item = self.instance
+    #     cart_item.quantity += quantity
+    #     cart_item.save()
+    #     self.instance = cart_item
+    #     return self.instance
