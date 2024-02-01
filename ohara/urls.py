@@ -25,4 +25,5 @@ urlpatterns = [
     path("__debug__/", include("debug_toolbar.urls")),
     path("warehouse/", include("warehouse.urls")),
     path("community/", include("community.urls")),
+    path("commerce/", include("commerce.urls")),
 ]
