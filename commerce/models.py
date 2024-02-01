@@ -1,6 +1,6 @@
 from uuid import uuid4
 
-from django.core.validators import MaxValueValidator
+from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
 from community.models import Customer, Seller
@@ -27,9 +27,15 @@ class CartItem(models.Model):
     book_item = models.ForeignKey(BookItem, on_delete=models.CASCADE)
     unit_price = models.PositiveSmallIntegerField()
     quantity = models.PositiveSmallIntegerField(
-        validators=[MaxValueValidator(30, "You can't order more than 30 pieces")]
+        validators=[
+            MaxValueValidator(30, "You can't order more than 30 pieces"),
+            MinValueValidator(1, "Quantity should be at least 1"),
+        ]
     )
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = [["book_item", "cart"]]
 
 
 class Order(models.Model):

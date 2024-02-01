@@ -113,3 +113,8 @@ class SellerWalletAdmin(admin.ModelAdmin):
     list_display = ["seller", "balance", "withdrawn", "total_earned"]
     autocomplete_fields = ["seller"]
     search_fields = ["seller__brand_name__istartswith"]
+
+
+@admin.register(models.Cart)
+class CartAdmin(admin.ModelAdmin):
+    list_display = ["id", "delivery_fee", "coupon_discount", "created_at"]
