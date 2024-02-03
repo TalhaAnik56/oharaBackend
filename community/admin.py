@@ -95,7 +95,7 @@ class SellerAdmin(admin.ModelAdmin):
         "user__last_name",
     ]
     autocomplete_fields = ["user"]
-    ordering = ["brand_name", "user__first_name", "user__last_name"]
+    ordering = ["user__first_name", "user__last_name", "brand_name"]
     list_filter = [BookCountFilter]
     list_select_related = ["user"]
     list_per_page = 10

@@ -22,6 +22,8 @@ class SellerSerializer(serializers.ModelSerializer):
         model = Seller
         fields = [
             "id",
+            "first_name",
+            "last_name",
             "brand_name",
             "address",
             "phone_no",

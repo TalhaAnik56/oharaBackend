@@ -36,6 +36,9 @@ class Book(models.Model):
     def __str__(self):
         return self.title
 
+    class Meta:
+        unique_together = ["title", "writer"]
+
 
 class BookItem(models.Model):
     book = models.ForeignKey(Book, on_delete=models.PROTECT)
@@ -45,8 +48,8 @@ class BookItem(models.Model):
     stock = models.PositiveIntegerField()
     created_at = models.DateTimeField(auto_now_add=True)
 
-    # def __str__(self):
-    #     return self.book.title + "--" + self.seller.brand_name
+    def __str__(self):
+        return self.book.title + "--" + self.seller.brand_name
 
     class Meta:
         unique_together = [["book", "seller"]]

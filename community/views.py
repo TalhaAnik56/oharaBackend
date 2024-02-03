@@ -17,14 +17,18 @@ class CustomerViewSet(ModelViewSet):
             CustomPagination.page_size = page_size
             self.pagination_class = CustomPagination
 
-        queryset = Customer.objects.all().order_by("name")
+        queryset = (
+            Customer.objects.all()
+            .select_related("user")
+            .order_by("user__first_name", "user__last_name")
+        )
         return queryset
 
     serializer_class = CustomerSerializer
     pagination_class = CustomPagination
     filter_backends = [OrderingFilter, SearchFilter]
     ordering_fields = ["address", "birth_date", "joined_at"]
-    search_fields = ["name", "address"]
+    search_fields = ["user__first_name", "user__last_name"]
 
 
 class SellerViewSet(ModelViewSet):
@@ -35,11 +39,11 @@ class SellerViewSet(ModelViewSet):
             CustomPagination.page_size = page_size
             self.pagination_class = CustomPagination
 
-        queryset = Seller.objects.all().order_by("brand_name")
+        queryset = Seller.objects.all().select_related("user").order_by("brand_name")
         return queryset
 
     serializer_class = SellerSerializer
     pagination_class = CustomPagination
     filter_backends = [SearchFilter, OrderingFilter]
-    search_fields = ["brand_name", "nid", "address"]
+    search_fields = ["brand_name", "user__first_name", "user__last_name"]
     ordering_fields = ["address", "joined_at"]
