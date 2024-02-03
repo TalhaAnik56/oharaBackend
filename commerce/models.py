@@ -22,6 +22,9 @@ class Cart(models.Model):
     coupon_discount = models.PositiveSmallIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self) -> str:
+        return str(self.id)
+
 
 class CartItem(models.Model):
     book_item = models.ForeignKey(BookItem, on_delete=models.CASCADE)

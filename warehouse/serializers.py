@@ -97,7 +97,7 @@ class FeedbackSerializer(serializers.ModelSerializer):
 
     def to_representation(self, feedback):
         representation = super().to_representation(feedback)
-        representation["customer"] = feedback.customer.name
+        representation["customer"] = feedback.customer.first_name()
         return representation
 
     def create(self, validated_data):

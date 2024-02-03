@@ -131,8 +131,8 @@ class FeedbackViewSet(ModelViewSet):
 
         queryset = (
             Feedback.objects.filter(book_id=self.kwargs["book_pk"])
+            .select_related("customer__user")
             .select_related("book")
-            .select_related("customer")
             .order_by("book__title")
         )
         return queryset

@@ -118,3 +118,8 @@ class SellerWalletAdmin(admin.ModelAdmin):
 @admin.register(models.Cart)
 class CartAdmin(admin.ModelAdmin):
     list_display = ["id", "delivery_fee", "coupon_discount", "created_at"]
+
+
+@admin.register(models.CartItem)
+class CartItemAdmin(admin.ModelAdmin):
+    list_display = ["id", "book_item", "quantity", "unit_price", "cart"]

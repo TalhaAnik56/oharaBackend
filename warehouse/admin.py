@@ -64,7 +64,7 @@ class BookAdmin(admin.ModelAdmin):
         "feedback_count",
     ]
     ordering = ["title"]
-    search_fields = ["title__istartswith"]
+    search_fields = ["title__istartswith", "writer__name"]
     autocomplete_fields = ["writer", "genre"]
     list_per_page = 10
 
