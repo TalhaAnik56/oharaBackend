@@ -14,7 +14,8 @@ from . import models
 @admin.register(models.Customer)
 class CustomerAdmin(admin.ModelAdmin):
     list_display = [
-        "name",
+        "first_name",
+        "last_name",
         "address",
         "phone_no",
         "birth_date",
@@ -22,9 +23,12 @@ class CustomerAdmin(admin.ModelAdmin):
         "feedback_given",
         "order_count",
     ]
-    search_fields = ["name__istartswith"]
-    ordering = ["name"]
+    search_fields = ["user__first_name__istartswith", "user__last_name__istartswith"]
+    # ai ordering use hocche shurutei kivabe ordering kora hobe tar jonne, ar class er moddhe je ordering kora ache sheita oi field e click kore ordering korar jonne,jemon first_name
+    ordering = ["user__first_name", "user__last_name"]
     list_per_page = 10
+    list_select_related = ["user"]
+    autocomplete_fields = ["user"]
 
     def get_queryset(self, request):
         return (
@@ -74,6 +78,9 @@ class BookCountFilter(admin.SimpleListFilter):
 @admin.register(models.Seller)
 class SellerAdmin(admin.ModelAdmin):
     list_display = [
+        "id",
+        "first_name",
+        "last_name",
         "brand_name",
         "address",
         "phone_no",
@@ -82,9 +89,15 @@ class SellerAdmin(admin.ModelAdmin):
         "joined_at",
         "book_count",
     ]
-    search_fields = ["brand_name__istartswith"]
-    ordering = ["brand_name", "address"]
+    search_fields = [
+        "brand_name",
+        "user__first_name",
+        "user__last_name",
+    ]
+    autocomplete_fields = ["user"]
+    ordering = ["brand_name", "user__first_name", "user__last_name"]
     list_filter = [BookCountFilter]
+    list_select_related = ["user"]
     list_per_page = 10
 
     def get_queryset(self, request):

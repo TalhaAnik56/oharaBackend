@@ -6,7 +6,15 @@ from .models import Customer, Seller
 class CustomerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Customer
-        fields = ["name", "address", "phone_no", "birth_date", "joined_at"]
+        fields = [
+            "id",
+            "first_name",
+            "last_name",
+            "address",
+            "phone_no",
+            "birth_date",
+            "joined_at",
+        ]
 
 
 class SellerSerializer(serializers.ModelSerializer):

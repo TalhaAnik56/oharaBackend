@@ -126,7 +126,7 @@ class BookItemAdmin(admin.ModelAdmin):
     ]
     autocomplete_fields = ["book", "seller"]
     list_select_related = ["book"]
-    search_fields = ["book__title__istartswith"]
+    search_fields = ["book__title"]
     ordering = ["book__title"]
     list_filter = ["created_at", StockFilter]
     list_per_page = 10
