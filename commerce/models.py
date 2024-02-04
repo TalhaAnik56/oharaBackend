@@ -72,6 +72,9 @@ class Order(models.Model):
     def __str__(self):
         return str(self.id)
 
+    class Meta:
+        permissions = [("cancel_order", "Can Cancel Order")]
+
 
 class OrderItem(models.Model):
     book_item = models.ForeignKey(BookItem, on_delete=models.SET_NULL, null=True)

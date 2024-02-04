@@ -22,6 +22,7 @@ class CustomerAdmin(admin.ModelAdmin):
         "joined_at",
         "feedback_given",
         "order_count",
+        "user",
     ]
     search_fields = ["user__first_name__istartswith", "user__last_name__istartswith"]
     # ai ordering use hocche shurutei kivabe ordering kora hobe tar jonne, ar class er moddhe je ordering kora ache sheita oi field e click kore ordering korar jonne,jemon first_name
@@ -88,6 +89,7 @@ class SellerAdmin(admin.ModelAdmin):
         "birth_date",
         "joined_at",
         "book_count",
+        "user",
     ]
     search_fields = [
         "brand_name",
