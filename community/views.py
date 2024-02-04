@@ -24,6 +24,9 @@ class CustomerViewSet(ModelViewSet):
         )
         return queryset
 
+    def get_serializer_context(self):
+        return {"user_id": self.request.user.id}
+
     serializer_class = CustomerSerializer
     pagination_class = CustomPagination
     filter_backends = [OrderingFilter, SearchFilter]
@@ -41,6 +44,9 @@ class SellerViewSet(ModelViewSet):
 
         queryset = Seller.objects.all().select_related("user").order_by("brand_name")
         return queryset
+
+    def get_serializer_context(self):
+        return {"user_id": self.request.user.id}
 
     serializer_class = SellerSerializer
     pagination_class = CustomPagination

@@ -16,6 +16,11 @@ class CustomerSerializer(serializers.ModelSerializer):
             "joined_at",
         ]
 
+    def create(self, validated_data):
+        user_id = self.context["user_id"]
+        customer = Customer.objects.create(**validated_data, user_id=user_id)
+        return customer
+
 
 class SellerSerializer(serializers.ModelSerializer):
     class Meta:
@@ -31,3 +36,8 @@ class SellerSerializer(serializers.ModelSerializer):
             "birth_date",
             "joined_at",
         ]
+
+    def create(self, validated_data):
+        user_id = self.context["user_id"]
+        seller = Seller.objects.create(**validated_data, user_id=user_id)
+        return seller
