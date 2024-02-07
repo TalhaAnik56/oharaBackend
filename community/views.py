@@ -1,5 +1,6 @@
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter, SearchFilter
+from rest_framework.permissions import DjangoModelPermissions
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
@@ -34,6 +35,7 @@ class CustomerViewSet(ModelViewSet):
     filter_backends = [OrderingFilter, SearchFilter]
     ordering_fields = ["address", "birth_date", "joined_at"]
     search_fields = ["user__first_name", "user__last_name"]
+    permission_classes = [DjangoModelPermissions]
 
     @action(detail=False, methods=["GET", "PUT"])
     def me(self, request):
