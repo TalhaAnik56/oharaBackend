@@ -1,4 +1,6 @@
+from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter, SearchFilter
+from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from widespread.paginations import CustomPagination
@@ -32,6 +34,21 @@ class CustomerViewSet(ModelViewSet):
     filter_backends = [OrderingFilter, SearchFilter]
     ordering_fields = ["address", "birth_date", "joined_at"]
     search_fields = ["user__first_name", "user__last_name"]
+
+    @action(detail=False, methods=["GET", "PUT"])
+    def me(self, request):
+        user = request.user
+        (customer, created) = Customer.objects.get_or_create(user_id=user.id)
+
+        if request.method == "GET":
+            serializer = CustomerSerializer(customer)
+            return Response(serializer.data)
+
+        elif request.method == "PUT":
+            serializer = CustomerSerializer(customer, data=request.data)
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data)
 
 
 class SellerViewSet(ModelViewSet):

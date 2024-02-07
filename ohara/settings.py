@@ -154,6 +154,7 @@ SIMPLE_JWT = {
 
 AUTH_USER_MODEL = "widespread.User"
 
+
 DJOSER = {
     "SERIALIZERS": {
         "user_create": "widespread.serializers.UserCreateSerializer",

@@ -8,6 +8,7 @@ class CustomerSerializer(serializers.ModelSerializer):
         model = Customer
         fields = [
             "id",
+            "user_id",
             "first_name",
             "last_name",
             "address",
@@ -15,6 +16,8 @@ class CustomerSerializer(serializers.ModelSerializer):
             "birth_date",
             "joined_at",
         ]
+
+    user_id = serializers.IntegerField(read_only=True)
 
     def create(self, validated_data):
         user_id = self.context["user_id"]
