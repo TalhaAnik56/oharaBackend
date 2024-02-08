@@ -1,6 +1,6 @@
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter, SearchFilter
-from rest_framework.permissions import DjangoModelPermissions
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
@@ -35,9 +35,9 @@ class CustomerViewSet(ModelViewSet):
     filter_backends = [OrderingFilter, SearchFilter]
     ordering_fields = ["address", "birth_date", "joined_at"]
     search_fields = ["user__first_name", "user__last_name"]
-    permission_classes = [DjangoModelPermissions]
+    permission_classes = [IsAdminUser]
 
-    @action(detail=False, methods=["GET", "PUT"])
+    @action(detail=False, methods=["GET", "PUT"], permission_classes=[IsAuthenticated])
     def me(self, request):
         user = request.user
         customer = Customer.objects.get(user_id=user.id)
