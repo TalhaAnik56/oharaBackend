@@ -1,5 +1,8 @@
+from django.core.validators import MaxValueValidator, MinValueValidator
+from django.db import transaction
 from rest_framework import serializers
 
+from community.models import Customer
 from warehouse.models import Book, BookItem
 
 from .models import Cart, CartItem, Order, OrderItem
@@ -31,16 +34,14 @@ class CartSerializer(serializers.ModelSerializer):
         model = Cart
         fields = [
             "id",
-            "delivery_fee",
-            "coupon_discount",
             "created_at",
             "cartitem_set",
-            "total_price",
+            "subtotal",
         ]
 
     id = serializers.UUIDField(read_only=True)
     cartitem_set = CartItemSerializer(many=True, read_only=True)
-    total_price = serializers.SerializerMethodField(
+    subtotal = serializers.SerializerMethodField(
         method_name="calculated_price", read_only=True
     )
 
@@ -49,8 +50,8 @@ class CartSerializer(serializers.ModelSerializer):
             item.book_item.unit_price * item.quantity
             for item in cart.cartitem_set.all()
         ]
-        total = sum(prices) + cart.delivery_fee - cart.coupon_discount
-        return total
+        subtotal = sum(prices)
+        return subtotal
 
 
 class AddCartItemSerializer(serializers.ModelSerializer):
@@ -95,15 +96,111 @@ class UpdateCartItemSerializer(serializers.ModelSerializer):
     #     return self.instance
 
 
+class NormalBookItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = BookItem
+        fields = [
+            "id",
+            "book",
+            "seller",
+        ]
+
+    book = serializers.StringRelatedField()
+    seller = serializers.StringRelatedField()
+
+
+class OrderItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderItem
+        fields = ["id", "book_item", "quantity", "unit_price"]
+
+    book_item = NormalBookItemSerializer()
+
+
 class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = [
+            "id",
             "customer",
             "payment_status",
             "order_status",
             "delivery_fee",
             "coupon_discount",
             "delivery_address",
+            "orderitem_set",
+            "total_price",
             "created_at",
         ]
+
+    orderitem_set = OrderItemSerializer(many=True)
+    total_price = serializers.SerializerMethodField(method_name="calculated_price")
+
+    def calculated_price(self, order: Order):
+        prices = [item.quantity * item.unit_price for item in order.orderitem_set.all()]
+        total_price = sum(prices) + order.delivery_fee - order.coupon_discount
+        return total_price
+
+
+class CreateOrderSerializer(serializers.Serializer):
+    cart_id = serializers.UUIDField()
+    delivery_address = serializers.CharField(max_length=200)
+    delivery_fee = serializers.IntegerField(
+        validators=[
+            MinValueValidator(0, "Delivery fee can not be less than zero"),
+            MaxValueValidator(300, "Delivery fee can not be greater than 300"),
+        ]
+    )
+    coupon_discount = serializers.IntegerField(
+        validators=[
+            MinValueValidator(0, "Discount can not be less than zero"),
+            MaxValueValidator(3000, "Discount can not be greater than 3000"),
+        ]
+    )
+
+    def validate_cart_id(self, cart_id):
+        if not Cart.objects.filter(pk=cart_id).exists():
+            raise serializers.ValidationError("This cart doesn't exist")
+        elif CartItem.objects.filter(cart_id=cart_id).count() == 0:
+            raise serializers.ValidationError("There are no products in this cart")
+        return cart_id
+
+    def save(self, **kwargs):
+        with transaction.atomic():
+            user_id = self.context["user_id"]
+            cart_id = self.validated_data["cart_id"]
+            delivery_address = self.validated_data["delivery_address"]
+            delivery_fee = self.validated_data["delivery_fee"]
+            coupon_discount = self.validated_data["coupon_discount"]
+
+            (customer, created) = Customer.objects.get_or_create(user_id=user_id)
+            cart = Cart.objects.get(pk=cart_id)
+            order = Order.objects.create(
+                customer=customer,
+                delivery_address=delivery_address,
+                delivery_fee=delivery_fee,
+                coupon_discount=coupon_discount,
+            )
+            cart_items = CartItem.objects.filter(cart_id=cart.id)
+
+            items_total_price = sum(
+                [item.unit_price * item.quantity for item in cart_items]
+            )
+            if coupon_discount > items_total_price:
+                raise serializers.ValidationError(
+                    "Coupon discount cannot be greater than the books' total price"
+                )
+
+            order_items = [
+                OrderItem(
+                    order=order,
+                    book_item=item.book_item,
+                    quantity=item.quantity,
+                    unit_price=item.unit_price,
+                )
+                for item in cart_items
+            ]
+
+            OrderItem.objects.bulk_create(order_items)
+            cart.delete()
+            return order

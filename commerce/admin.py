@@ -27,6 +27,7 @@ class OrderItemAdmin(admin.ModelAdmin):
     ]
     autocomplete_fields = ["book_item"]
     list_per_page = 10
+    list_filter = ["order"]
 
     def get_queryset(self, request):
         individual_total = ExpressionWrapper(
@@ -54,11 +55,11 @@ class OrderAdmin(admin.ModelAdmin):
         "customer",
         "payment_status",
         "order_status",
-        "delivery_address",
         "item_count",
         "delivery_fee",
         "coupon_discount",
         "total_amount",
+        "delivery_address",
         "created_at",
     ]
     list_select_related = ["customer"]
@@ -82,10 +83,13 @@ class OrderAdmin(admin.ModelAdmin):
             + F("delivery_fee")
             - F("coupon_discount")
         )
+
+        item_count = Sum("orderitem__quantity")
+
         return (
             super()
             .get_queryset(request)
-            .annotate(item_count=Count("orderitem"), total_amount=total_amount)
+            .annotate(item_count=item_count, total_amount=total_amount)
         )
 
     @admin.display(ordering="item_count")
@@ -117,7 +121,7 @@ class SellerWalletAdmin(admin.ModelAdmin):
 
 @admin.register(models.Cart)
 class CartAdmin(admin.ModelAdmin):
-    list_display = ["id", "delivery_fee", "coupon_discount", "created_at"]
+    list_display = ["id", "created_at"]
 
 
 @admin.register(models.CartItem)

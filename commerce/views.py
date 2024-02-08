@@ -4,13 +4,18 @@ from rest_framework.mixins import (
     ListModelMixin,
     RetrieveModelMixin,
 )
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
+from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
+
+from community.models import Customer
 
 from .models import Cart, CartItem, Order, OrderItem
 from .serializers import (
     AddCartItemSerializer,
     CartItemSerializer,
     CartSerializer,
+    CreateOrderSerializer,
     OrderSerializer,
     UpdateCartItemSerializer,
 )
@@ -57,5 +62,28 @@ class CartItemViewSet(ModelViewSet):
 
 
 class OrderViewSet(ModelViewSet):
-    queryset = Order.objects.all()
-    serializer_class = OrderSerializer
+    def get_queryset(self):
+        user = self.request.user
+        queryset = Order.objects.prefetch_related(
+            "orderitem_set__book_item__book", "orderitem_set__book_item__seller"
+        ).all()
+        if user.is_staff:
+            return queryset
+        (customer, created) = Customer.objects.get_or_create(user_id=user.id)
+        return queryset.filter(customer_id=customer.id)
+
+    def create(self, request, *args, **kwargs):
+        serializer = CreateOrderSerializer(
+            data=request.data, context={"user_id": request.user.id}
+        )
+        serializer.is_valid(raise_exception=True)
+        order = serializer.save()
+        serializer = OrderSerializer(order)
+        return Response(serializer.data)
+
+    def get_serializer_class(self):
+        if self.request.method == "POST":
+            return CreateOrderSerializer
+        return OrderSerializer
+
+    permission_classes = [IsAuthenticated]

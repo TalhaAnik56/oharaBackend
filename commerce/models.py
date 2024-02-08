@@ -18,8 +18,6 @@ class Coupon(models.Model):
 
 class Cart(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4)
-    delivery_fee = models.PositiveSmallIntegerField(default=50)
-    coupon_discount = models.PositiveSmallIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self) -> str:
@@ -64,9 +62,19 @@ class Order(models.Model):
     order_status = models.CharField(
         max_length=1, choices=ORDER_STATUS, default=CONFIRMED
     )
-    delivery_fee = models.PositiveSmallIntegerField()
-    delivery_address = models.CharField(max_length=150)
-    coupon_discount = models.PositiveSmallIntegerField(default=0)
+    delivery_fee = models.PositiveSmallIntegerField(
+        validators=[
+            MaxValueValidator(300, "Delivery fee can not be greater than 300"),
+        ]
+    )
+    delivery_address = models.CharField(max_length=200)
+    coupon_discount = models.PositiveSmallIntegerField(
+        default=0,
+        validators=[
+            MinValueValidator(0, "Discount can not be less than zero"),
+            MaxValueValidator(3000, "Discount can not be greater than 3000"),
+        ],
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
