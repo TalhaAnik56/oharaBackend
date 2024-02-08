@@ -93,6 +93,16 @@ class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE)
 
 
+class SellingHistory(models.Model):
+    seller = models.ForeignKey(Seller, on_delete=models.CASCADE)
+    book_item = models.ForeignKey(BookItem, on_delete=models.SET_NULL, null=True)
+    quantity = models.IntegerField(
+        validators=[MinValueValidator(1, "Quantity can't be less than 1")]
+    )
+    unit_price = models.PositiveSmallIntegerField()
+    order = models.ForeignKey(Order, on_delete=models.SET_NULL, null=True)
+
+
 class SellerWallet(models.Model):
     seller = models.OneToOneField(Seller, on_delete=models.CASCADE, primary_key=True)
     balance = models.PositiveIntegerField(null=True, blank=True, default=0)

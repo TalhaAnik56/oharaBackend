@@ -6,6 +6,7 @@ from community.models import Customer
 from warehouse.models import Book, BookItem
 
 from .models import Cart, CartItem, Order, OrderItem
+from .signals import order_delivered
 
 
 class SimpleBookItemSerializer(serializers.ModelSerializer):
@@ -210,3 +211,20 @@ class UpdateOrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Order
         fields = ["payment_status", "order_status"]
+
+    def save(self, **kwargs):
+        with transaction.atomic():
+            order = self.instance
+            payment_status = self.validated_data["payment_status"]
+            order_status = self.validated_data["order_status"]
+
+            if payment_status not in ["R"] and order_status == "D":
+                raise serializers.ValidationError("You have to complete payment first")
+
+            order.payment_status = payment_status
+            order.order_status = order_status
+            order.save()
+            self.instance = order
+            if order.order_status == "D":
+                order_delivered.send_robust(Order, order=order)
+            return self.instance
