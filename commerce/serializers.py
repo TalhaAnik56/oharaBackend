@@ -96,7 +96,7 @@ class UpdateCartItemSerializer(serializers.ModelSerializer):
     #     return self.instance
 
 
-class NormalBookItemSerializer(serializers.ModelSerializer):
+class Book_Item_Serializer_For_Order_Item_Serializer(serializers.ModelSerializer):
     class Meta:
         model = BookItem
         fields = [
@@ -114,7 +114,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
         model = OrderItem
         fields = ["id", "book_item", "quantity", "unit_price"]
 
-    book_item = NormalBookItemSerializer()
+    book_item = Book_Item_Serializer_For_Order_Item_Serializer()
 
 
 class OrderSerializer(serializers.ModelSerializer):
@@ -173,7 +173,7 @@ class CreateOrderSerializer(serializers.Serializer):
             delivery_fee = self.validated_data["delivery_fee"]
             coupon_discount = self.validated_data["coupon_discount"]
 
-            (customer, created) = Customer.objects.get_or_create(user_id=user_id)
+            customer = Customer.objects.get(user_id=user_id)
             cart = Cart.objects.get(pk=cart_id)
             order = Order.objects.create(
                 customer=customer,

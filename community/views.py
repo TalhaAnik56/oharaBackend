@@ -40,7 +40,7 @@ class CustomerViewSet(ModelViewSet):
     @action(detail=False, methods=["GET", "PUT"])
     def me(self, request):
         user = request.user
-        (customer, created) = Customer.objects.get_or_create(user_id=user.id)
+        customer = Customer.objects.get(user_id=user.id)
 
         if request.method == "GET":
             serializer = CustomerSerializer(customer)

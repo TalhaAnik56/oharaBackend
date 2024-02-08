@@ -73,7 +73,7 @@ class OrderViewSet(ModelViewSet):
         ).all()
         if user.is_staff:
             return queryset
-        (customer, created) = Customer.objects.get_or_create(user_id=user.id)
+        customer = Customer.objects.get(user_id=user.id)
         return queryset.filter(customer_id=customer.id)
 
     def get_serializer_class(self):
