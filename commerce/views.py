@@ -18,6 +18,7 @@ from .serializers import (
     CreateOrderSerializer,
     OrderSerializer,
     UpdateCartItemSerializer,
+    UpdateOrderSerializer,
 )
 
 # Create your views here.
@@ -62,6 +63,9 @@ class CartItemViewSet(ModelViewSet):
 
 
 class OrderViewSet(ModelViewSet):
+
+    http_method_names = ["get", "post", "patch", "delete", "head", "options"]
+
     def get_queryset(self):
         user = self.request.user
         queryset = Order.objects.prefetch_related(
@@ -72,6 +76,18 @@ class OrderViewSet(ModelViewSet):
         (customer, created) = Customer.objects.get_or_create(user_id=user.id)
         return queryset.filter(customer_id=customer.id)
 
+    def get_serializer_class(self):
+        if self.request.method == "POST":
+            return CreateOrderSerializer
+        elif self.request.method == "PATCH":
+            return UpdateOrderSerializer
+        return OrderSerializer
+
+    def get_permissions(self):
+        if self.request.method in ["PATCH", "DELETE"]:
+            return [IsAdminUser()]
+        return [IsAuthenticated()]
+
     def create(self, request, *args, **kwargs):
         serializer = CreateOrderSerializer(
             data=request.data, context={"user_id": request.user.id}
@@ -80,10 +96,3 @@ class OrderViewSet(ModelViewSet):
         order = serializer.save()
         serializer = OrderSerializer(order)
         return Response(serializer.data)
-
-    def get_serializer_class(self):
-        if self.request.method == "POST":
-            return CreateOrderSerializer
-        return OrderSerializer
-
-    permission_classes = [IsAuthenticated]
