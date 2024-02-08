@@ -49,7 +49,7 @@ class Order(models.Model):
     DELIVERY_ONGOING = "O"
     FAILED = "F"
 
-    PAYMENT_STATUS = [(PENDING, "pending"), (RECEIVED, "received"), (FAILED, "failed")]
+    PAYMENT_STATUS = [(PENDING, "pending"), (RECEIVED, "received")]
     ORDER_STATUS = [
         (CONFIRMED, "confirmed"),
         (DELIVERY_ONGOING, "delivery ongoing"),

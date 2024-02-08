@@ -6,11 +6,12 @@ from rest_framework.mixins import (
 )
 from rest_framework.viewsets import GenericViewSet, ModelViewSet
 
-from .models import Cart, CartItem
+from .models import Cart, CartItem, Order, OrderItem
 from .serializers import (
     AddCartItemSerializer,
     CartItemSerializer,
     CartSerializer,
+    OrderSerializer,
     UpdateCartItemSerializer,
 )
 
@@ -53,3 +54,8 @@ class CartItemViewSet(ModelViewSet):
 
     def get_serializer_context(self):
         return {"cart_id": self.kwargs["cart_pk"]}
+
+
+class OrderViewSet(ModelViewSet):
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer

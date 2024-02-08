@@ -2,7 +2,7 @@ from rest_framework import serializers
 
 from warehouse.models import Book, BookItem
 
-from .models import Cart, CartItem
+from .models import Cart, CartItem, Order, OrderItem
 
 
 class SimpleBookItemSerializer(serializers.ModelSerializer):
@@ -93,3 +93,17 @@ class UpdateCartItemSerializer(serializers.ModelSerializer):
     #     cart_item.save()
     #     self.instance = cart_item
     #     return self.instance
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = [
+            "customer",
+            "payment_status",
+            "order_status",
+            "delivery_fee",
+            "coupon_discount",
+            "delivery_address",
+            "created_at",
+        ]
