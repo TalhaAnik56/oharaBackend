@@ -101,6 +101,8 @@ class SellingHistory(models.Model):
     )
     unit_price = models.PositiveSmallIntegerField()
     order = models.ForeignKey(Order, on_delete=models.SET_NULL, null=True)
+    money_transferred = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
 
 
 class SellerWallet(models.Model):

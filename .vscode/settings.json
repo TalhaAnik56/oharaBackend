@@ -3,11 +3,13 @@
         "bookitem",
         "bookitems",
         "cartitem",
+        "cartitems",
         "djoser",
         "filterset",
         "ohara",
         "orderitem",
         "paginations",
+        "sellinghistory",
         "simplejwt",
         "talha"
     ]

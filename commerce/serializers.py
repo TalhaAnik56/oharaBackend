@@ -6,7 +6,7 @@ from community.models import Customer
 from warehouse.models import Book, BookItem
 from warehouse.signals import stock_out
 
-from .models import Cart, CartItem, Order, OrderItem
+from .models import Cart, CartItem, Order, OrderItem, SellingHistory
 from .signals import order_delivered
 
 
@@ -288,3 +288,18 @@ class UpdateOrderSerializer(serializers.ModelSerializer):
             if order.order_status == "D":
                 order_delivered.send_robust(Order, order=order)
             return self.instance
+
+
+class SellingHistorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SellingHistory
+        fields = [
+            "id",
+            "seller",
+            "book_item",
+            "quantity",
+            "unit_price",
+            "order",
+            "money_transferred",
+            "created_at",
+        ]
