@@ -63,18 +63,14 @@ class Order(models.Model):
         max_length=1, choices=ORDER_STATUS, default=CONFIRMED
     )
     delivery_fee = models.PositiveSmallIntegerField(
-        validators=[
-            MaxValueValidator(300, "Delivery fee can not be greater than 300"),
-        ]
-    )
-    delivery_address = models.CharField(max_length=200)
-    coupon_discount = models.PositiveSmallIntegerField(
         default=0,
         validators=[
-            MinValueValidator(0, "Discount can not be less than zero"),
-            MaxValueValidator(3000, "Discount can not be greater than 3000"),
+            MaxValueValidator(300, "Delivery fee can not be greater than 300"),
         ],
     )
+    delivery_address = models.CharField(max_length=200)
+    coupon_discount = models.PositiveSmallIntegerField(default=0)
+    money_transferred = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -91,18 +87,6 @@ class OrderItem(models.Model):
     )
     unit_price = models.PositiveSmallIntegerField()
     order = models.ForeignKey(Order, on_delete=models.CASCADE)
-
-
-class SellingHistory(models.Model):
-    seller = models.ForeignKey(Seller, on_delete=models.CASCADE)
-    book_item = models.ForeignKey(BookItem, on_delete=models.SET_NULL, null=True)
-    quantity = models.IntegerField(
-        validators=[MinValueValidator(1, "Quantity can't be less than 1")]
-    )
-    unit_price = models.PositiveSmallIntegerField()
-    order = models.ForeignKey(Order, on_delete=models.SET_NULL, null=True)
-    money_transferred = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
 
 
 class SellerWallet(models.Model):

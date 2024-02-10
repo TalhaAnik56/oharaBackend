@@ -10,14 +10,13 @@ from rest_framework.viewsets import GenericViewSet, ModelViewSet
 
 from community.models import Customer
 
-from .models import Cart, CartItem, Order, OrderItem, SellerWallet, SellingHistory
+from .models import Cart, CartItem, Order, OrderItem
 from .serializers import (
     AddCartItemSerializer,
     CartItemSerializer,
     CartSerializer,
     CreateOrderSerializer,
     OrderSerializer,
-    SellingHistorySerializer,
     UpdateCartItemSerializer,
     UpdateOrderSerializer,
 )
@@ -97,8 +96,3 @@ class OrderViewSet(ModelViewSet):
         order = serializer.save()
         serializer = OrderSerializer(order)
         return Response(serializer.data)
-
-
-class SellingHistoryViewSet(ModelViewSet):
-    queryset = SellingHistory.objects.all()
-    serializer_class = SellingHistorySerializer
