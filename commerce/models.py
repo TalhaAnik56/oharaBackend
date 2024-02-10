@@ -90,7 +90,8 @@ class OrderItem(models.Model):
 
 
 class SellerWallet(models.Model):
-    seller = models.OneToOneField(Seller, on_delete=models.CASCADE, primary_key=True)
+    seller = models.OneToOneField(Seller, on_delete=models.CASCADE, unique=True)
     balance = models.PositiveIntegerField(null=True, blank=True, default=0)
     withdrawn = models.PositiveIntegerField(null=True, blank=True, default=0)
     total_earned = models.PositiveIntegerField(null=True, blank=True, default=0)
+    last_update = models.DateTimeField(auto_now=True)
