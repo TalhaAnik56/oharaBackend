@@ -251,8 +251,35 @@ class UpdateOrderSerializer(serializers.ModelSerializer):
             payment_status = self.validated_data["payment_status"]
             order_status = self.validated_data["order_status"]
 
-            if payment_status not in ["R"] and order_status == "D":
-                raise serializers.ValidationError("You have to complete payment first")
+            # Read the error messages, you will understand the logics automatically
+            if order.order_status == "D" and order_status != "D":
+                raise serializers.ValidationError(
+                    {"error": "You can't change the order status once it's delivered"}
+                )
+
+            elif order.payment_status == "R" and payment_status != "R":
+                raise serializers.ValidationError(
+                    {"error": "You can't change the payment status once it's received"}
+                )
+
+            elif payment_status != "R" and order_status == "D":
+                raise serializers.ValidationError(
+                    {"error": "You have to make the payment first"}
+                )
+
+            # We will transfer money to sellers' accounts once the order is delivered.
+            # For that reason, order delivered shouldn't be updated more than once. So if the user provide "R" as payment_status and "D"
+            # as order_status, if the order is already in that state,it won't be updated again.So the money will transfer to the sellers'
+            # accounts only once.
+            elif (
+                order.order_status == "D"
+                and order_status == "D"
+                and order.payment_status == "R"
+                and payment_status == "R"
+            ):
+                raise serializers.ValidationError(
+                    {"error": "The changes you are trying to apply is already applied"}
+                )
 
             order.payment_status = payment_status
             order.order_status = order_status
