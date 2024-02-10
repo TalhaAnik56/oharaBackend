@@ -4,6 +4,7 @@ from rest_framework import serializers
 
 from community.models import Customer
 from warehouse.models import Book, BookItem
+from warehouse.signals import stock_out
 
 from .models import Cart, CartItem, Order, OrderItem
 from .signals import order_delivered
@@ -229,6 +230,9 @@ class CreateOrderSerializer(serializers.Serializer):
                 )
                 item.book_item.stock -= quantity
                 item.book_item.save()
+                # If stock becomes zero we will fire a signal
+                if item.book_item.stock == 0:
+                    stock_out.send_robust(BookItem, book_item=item.book_item)
                 order_items.append(order_item)
 
             OrderItem.objects.bulk_create(order_items)
