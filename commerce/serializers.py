@@ -55,6 +55,15 @@ class CartSerializer(serializers.ModelSerializer):
         return subtotal
 
 
+def is_quantity_greater_than_stock(book_item, quantity):
+    if quantity > book_item.stock:
+        raise serializers.ValidationError(
+            {
+                "error": f"Sorry, we only have {book_item.stock} pieces of this book in our stock"
+            }
+        )
+
+
 class AddCartItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = CartItem
@@ -69,11 +78,14 @@ class AddCartItemSerializer(serializers.ModelSerializer):
             cart_item = CartItem.objects.get(
                 cart_id=cart_id, book_item__id=book_item.id
             )
-            cart_item.quantity += quantity
+            new_quantity = cart_item.quantity + quantity
+            is_quantity_greater_than_stock(cart_item.book_item, new_quantity)
+            cart_item.quantity = new_quantity
             cart_item.save()
             self.instance = cart_item
 
         except CartItem.DoesNotExist:
+            is_quantity_greater_than_stock(book_item, quantity)
             cart_item = CartItem.objects.create(
                 **self.validated_data, cart_id=cart_id, unit_price=book_item.unit_price
             )
@@ -87,14 +99,14 @@ class UpdateCartItemSerializer(serializers.ModelSerializer):
         model = CartItem
         fields = ["quantity"]
 
-    # jodi amon chai je +1 kore kore quantity barabe ba ai type tahole aita use korte hobe
-    # def save(self, **kwargs):
-    #     quantity = self.validated_data["quantity"]
-    #     cart_item = self.instance
-    #     cart_item.quantity += quantity
-    #     cart_item.save()
-    #     self.instance = cart_item
-    #     return self.instance
+    def save(self, **kwargs):
+        quantity = self.validated_data["quantity"]
+        cart_item = self.instance
+        is_quantity_greater_than_stock(cart_item.book_item, quantity)
+        cart_item.quantity = quantity
+        cart_item.save()
+        self.instance = cart_item
+        return self.instance
 
 
 class Book_Item_Serializer_For_Order_Item_Serializer(serializers.ModelSerializer):
@@ -182,25 +194,42 @@ class CreateOrderSerializer(serializers.Serializer):
                 delivery_fee=delivery_fee,
                 coupon_discount=coupon_discount,
             )
-            cart_items = CartItem.objects.filter(cart_id=cart.id)
+            cart_items = CartItem.objects.filter(cart_id=cart.id).select_related(
+                "book_item"
+            )
 
             items_total_price = sum(
                 [item.unit_price * item.quantity for item in cart_items]
             )
+            # Let's check if coupon discount is greater than the books' total price?
             if coupon_discount > items_total_price:
                 raise serializers.ValidationError(
-                    "Coupon discount cannot be greater than the books' total price"
+                    {
+                        "error": "Coupon discount cannot be greater than the books' total price"
+                    }
                 )
 
-            order_items = [
-                OrderItem(
+            # Let's create order item objects
+            order_items = []
+            for item in cart_items:
+                quantity = item.quantity
+                stock = item.book_item.stock
+                if quantity > stock:
+                    raise serializers.ValidationError(
+                        {
+                            "error": f"Sorry, We only have {stock} pieces of this book in our stock"
+                        }
+                    )
+
+                order_item = OrderItem(
                     order=order,
                     book_item=item.book_item,
                     quantity=item.quantity,
                     unit_price=item.unit_price,
                 )
-                for item in cart_items
-            ]
+                item.book_item.stock -= quantity
+                item.book_item.save()
+                order_items.append(order_item)
 
             OrderItem.objects.bulk_create(order_items)
             cart.delete()
