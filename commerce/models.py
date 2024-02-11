@@ -95,3 +95,20 @@ class SellerWallet(models.Model):
     withdrawn = models.PositiveIntegerField(null=True, blank=True, default=0)
     total_earned = models.PositiveIntegerField(null=True, blank=True, default=0)
     last_update = models.DateTimeField(auto_now=True)
+
+
+class MoneyWithdraw(models.Model):
+    BKASH = "B"
+    NAGAD = "N"
+    PAYMENT_METHOD_CHOICES = [(BKASH, "Bkash"), (NAGAD, "Nagad")]
+
+    seller = models.ForeignKey(Seller, on_delete=models.SET_NULL, null=True)
+    amount = models.PositiveIntegerField(
+        validators=[
+            MinValueValidator(20, "You can't withdraw less than 20 taka"),
+            MaxValueValidator(20000, "You can't withdraw more than 20000 taka"),
+        ]
+    )
+    payment_method = models.CharField(max_length=1, choices=PAYMENT_METHOD_CHOICES)
+    payment_account_no = models.CharField(max_length=25)
+    created_at = models.DateTimeField(auto_now_add=True)

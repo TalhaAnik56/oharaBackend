@@ -1,3 +1,4 @@
+from rest_framework.decorators import action
 from rest_framework.mixins import (
     CreateModelMixin,
     DestroyModelMixin,
@@ -10,12 +11,13 @@ from rest_framework.viewsets import GenericViewSet, ModelViewSet
 
 from community.models import Customer
 
-from .models import Cart, CartItem, Order, OrderItem, SellerWallet
+from .models import Cart, CartItem, MoneyWithdraw, Order, SellerWallet
 from .serializers import (
     AddCartItemSerializer,
     CartItemSerializer,
     CartSerializer,
     CreateOrderSerializer,
+    MoneyWithdrawSerializer,
     OrderSerializer,
     SellerWalletSerializer,
     UpdateCartItemSerializer,
@@ -100,5 +102,26 @@ class OrderViewSet(ModelViewSet):
 
 
 class SellerWalletViewSet(ModelViewSet):
-    queryset = SellerWallet.objects.all()
+
+    def get_queryset(self):
+        user = self.request.user
+        queryset = SellerWallet.objects.select_related("seller").all()
+        if user.is_staff:
+            return queryset
+        return queryset.filter(seller=user.seller)
+
     serializer_class = SellerWalletSerializer
+
+
+class MoneyWithdrawViewSet(ModelViewSet):
+    def get_queryset(self):
+        queryset = MoneyWithdraw.objects.select_related("seller").all()
+        user = self.request.user
+        if user.is_staff:
+            return queryset
+        return queryset.filter(seller=user.seller)
+
+    serializer_class = MoneyWithdrawSerializer
+
+    def get_serializer_context(self):
+        return {"seller_id": self.request.user.seller.id}

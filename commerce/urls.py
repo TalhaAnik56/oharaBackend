@@ -6,7 +6,8 @@ from . import views
 router = DefaultRouter()
 router.register("carts", views.CartViewSet, basename="cart")
 router.register("orders", views.OrderViewSet, basename="order")
-router.register("sellerwallet", views.SellerWalletViewSet, basename="seller-wallet")
+router.register("sellerwallets", views.SellerWalletViewSet, basename="seller-wallet")
+router.register("moneywithdraw", views.MoneyWithdrawViewSet, basename="money-withdraw")
 
 cart_item_router = NestedDefaultRouter(router, "carts", lookup="cart")
 cart_item_router.register("cartitems", views.CartItemViewSet, basename="cart-item")

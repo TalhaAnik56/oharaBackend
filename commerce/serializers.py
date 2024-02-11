@@ -3,10 +3,10 @@ from django.db import transaction
 from rest_framework import serializers
 
 from community.models import Customer
-from warehouse.models import Book, BookItem
+from warehouse.models import BookItem
 from warehouse.signals import stock_out
 
-from .models import Cart, CartItem, Order, OrderItem, SellerWallet
+from .models import Cart, CartItem, MoneyWithdraw, Order, OrderItem, SellerWallet
 from .signals import order_delivered
 
 
@@ -295,3 +295,38 @@ class SellerWalletSerializer(serializers.ModelSerializer):
     class Meta:
         model = SellerWallet
         fields = ["id", "seller", "total_earned", "balance", "withdrawn", "last_update"]
+
+
+class MoneyWithdrawSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MoneyWithdraw
+        fields = ["id", "amount", "payment_method", "payment_account_no", "seller"]
+
+    seller = serializers.StringRelatedField(read_only=True)
+
+    def save(self, **kwargs):
+        with transaction.atomic():
+            seller_id = self.context["seller_id"]
+            seller_wallet = SellerWallet.objects.get(seller_id=seller_id)
+
+            amount = self.validated_data["amount"]
+            payment_method = self.validated_data["payment_method"]
+            payment_account_no = self.validated_data["payment_account_no"]
+
+            if amount > seller_wallet.balance:
+                raise serializers.ValidationError(
+                    {"error": "You have insufficient balance"}
+                )
+
+            money_withdraw = MoneyWithdraw.objects.create(
+                seller=seller_wallet.seller,
+                amount=amount,
+                payment_account_no=payment_account_no,
+                payment_method=payment_method,
+            )
+
+            seller_wallet.balance -= amount
+            seller_wallet.withdrawn += amount
+            seller_wallet.save()
+            self.instance = money_withdraw
+            return self.instance
