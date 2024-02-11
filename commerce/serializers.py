@@ -296,6 +296,8 @@ class SellerWalletSerializer(serializers.ModelSerializer):
         model = SellerWallet
         fields = ["id", "seller", "total_earned", "balance", "withdrawn", "last_update"]
 
+    seller = serializers.StringRelatedField()
+
 
 class MoneyWithdrawSerializer(serializers.ModelSerializer):
     class Meta:

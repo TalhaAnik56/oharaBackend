@@ -7,11 +7,12 @@ from rest_framework.mixins import (
 )
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.viewsets import GenericViewSet, ModelViewSet
+from rest_framework.viewsets import GenericViewSet, ModelViewSet, ReadOnlyModelViewSet
 
 from community.models import Customer
 
 from .models import Cart, CartItem, MoneyWithdraw, Order, SellerWallet
+from .permissions import IsAdminOrIsSeller
 from .serializers import (
     AddCartItemSerializer,
     CartItemSerializer,
@@ -101,8 +102,7 @@ class OrderViewSet(ModelViewSet):
         return Response(serializer.data)
 
 
-class SellerWalletViewSet(ModelViewSet):
-
+class SellerWalletViewSet(ReadOnlyModelViewSet):
     def get_queryset(self):
         user = self.request.user
         queryset = SellerWallet.objects.select_related("seller").all()
@@ -111,9 +111,12 @@ class SellerWalletViewSet(ModelViewSet):
         return queryset.filter(seller=user.seller)
 
     serializer_class = SellerWalletSerializer
+    permission_classes = [IsAdminOrIsSeller]
 
 
-class MoneyWithdrawViewSet(ModelViewSet):
+class MoneyWithdrawViewSet(
+    ListModelMixin, RetrieveModelMixin, CreateModelMixin, GenericViewSet
+):
     def get_queryset(self):
         queryset = MoneyWithdraw.objects.select_related("seller").all()
         user = self.request.user
@@ -122,6 +125,7 @@ class MoneyWithdrawViewSet(ModelViewSet):
         return queryset.filter(seller=user.seller)
 
     serializer_class = MoneyWithdrawSerializer
+    permission_classes = [IsAdminOrIsSeller]
 
     def get_serializer_context(self):
         return {"seller_id": self.request.user.seller.id}
