@@ -10,9 +10,9 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet, ModelViewSet, ReadOnlyModelViewSet
 
 from community.models import Customer
+from widespread.permissions import IsAdminOrIsSeller
 
 from .models import Cart, CartItem, MoneyWithdraw, Order, SellerWallet
-from .permissions import IsAdminOrIsSeller
 from .serializers import (
     AddCartItemSerializer,
     CartItemSerializer,
