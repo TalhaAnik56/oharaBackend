@@ -3,10 +3,12 @@ from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.filters import OrderingFilter, SearchFilter
+from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from widespread.paginations import CustomPagination
+from widespread.permissions import IsAdminOrIsSeller, IsSeller
 
 from .models import Book, BookItem, Feedback, Genre, Writer
 from .serializers import (
@@ -14,6 +16,7 @@ from .serializers import (
     BookSerializer,
     FeedbackSerializer,
     GenreSerializer,
+    UpdateBookItemSerializer,
     WriterSerializer,
 )
 
@@ -57,6 +60,8 @@ class WriterViewSet(ModelViewSet):
 
 
 class BookViewSet(ModelViewSet):
+    http_method_names = ["get", "post", "put", "delete"]
+
     def get_queryset(self):
         page_size = self.request.query_params.get("page_size")
 
@@ -74,6 +79,15 @@ class BookViewSet(ModelViewSet):
         )
 
         return queryset
+
+    def get_permissions(self):
+        if self.request.method == "POST":
+            return [IsAdminOrIsSeller()]
+
+        elif self.request.method in ["PUT", "DELETE"]:
+            return [IsAdminUser()]
+
+        return [AllowAny()]
 
     serializer_class = BookSerializer
     pagination_class = CustomPagination
@@ -96,6 +110,8 @@ class BookViewSet(ModelViewSet):
 
 
 class BookItemViewSet(ModelViewSet):
+    http_method_names = ["get", "patch", "post", "delete"]
+
     def get_queryset(self):
         page_size = self.request.query_params.get("page_size")
 
@@ -112,13 +128,42 @@ class BookItemViewSet(ModelViewSet):
         )
         return queryset
 
-    serializer_class = BookItemSerializer
+    def get_permissions(self):
+        if self.request.method == "POST":
+            return [IsSeller()]
+        elif self.request.method in ["PATCH", "DELETE"]:
+            return [IsAdminOrIsSeller()]
+        return [AllowAny()]
+
+    def get_serializer_class(self):
+        if self.request.method == "PATCH":
+            return UpdateBookItemSerializer
+        return BookItemSerializer
+
+    def get_serializer_context(self):
+        return {"book_id": self.kwargs["book_pk"], "user": self.request.user}
+
     pagination_class = CustomPagination
     filter_backends = [OrderingFilter]
     ordering_fields = ["unit_price", "stock"]
 
-    def get_serializer_context(self):
-        return {"book_id": self.kwargs["book_pk"]}
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        user = request.user
+        does_exist = BookItem.objects.filter(
+            pk=instance.id, seller=user.seller
+        ).exists()
+
+        if user.is_staff or does_exist:
+            instance.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        else:
+            return Response(
+                data={
+                    "error": "This is not your book item. You can't update or delete this"
+                },
+                status=status.HTTP_405_METHOD_NOT_ALLOWED,
+            )
 
 
 class FeedbackViewSet(ModelViewSet):

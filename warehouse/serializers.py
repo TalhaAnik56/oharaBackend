@@ -27,7 +27,8 @@ class BookSerializer(serializers.ModelSerializer):
         return representation
 
 
-class BookItemSerializer(serializers.ModelSerializer):
+# This class will only be used for inheritance.
+class BaseBookItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = BookItem
         fields = [
@@ -41,26 +42,46 @@ class BookItemSerializer(serializers.ModelSerializer):
         ]
 
     book = BookSerializer(read_only=True)
+    seller = serializers.StringRelatedField(read_only=True)
 
-    def to_representation(self, book_item):
-        representation = super().to_representation(book_item)
-        representation["seller"] = book_item.seller.brand_name
-        return representation
 
+class BookItemSerializer(BaseBookItemSerializer):
     def create(self, validated_data):
         book_id = self.context["book_id"]
-        seller = validated_data["seller"]
+        user = self.context["user"]
+        seller = user.seller
 
-        book_item, created = BookItem.objects.get_or_create(
+        (book_item, created) = BookItem.objects.get_or_create(
             book_id=book_id, seller=seller, defaults=validated_data
         )
 
         if not created:
             raise serializers.ValidationError(
-                "This book and seller combination already exists."
+                {"error": "This book and seller combination already exists."}
             )
 
         return book_item
+
+
+class UpdateBookItemSerializer(BaseBookItemSerializer):
+    def save(self, **kwargs):
+        book_item = self.instance
+        user = self.context["user"]
+        does_exist = BookItem.objects.filter(
+            pk=book_item.id, seller=user.seller
+        ).exists()
+
+        if user.is_staff or does_exist:
+            book_item.description = self.validated_data["description"]
+            book_item.unit_price = self.validated_data["unit_price"]
+            book_item.stock = self.validated_data["stock"]
+            book_item.save()
+            self.instance = book_item
+            return self.instance
+        else:
+            raise serializers.ValidationError(
+                {"error": "This is not your book item.You can't update or delete this"}
+            )
 
 
 class GenreSerializer(serializers.ModelSerializer):
