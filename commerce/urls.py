@@ -9,6 +9,7 @@ router.register("orders", views.OrderViewSet, basename="order")
 router.register("sellerwallets", views.SellerWalletViewSet, basename="seller-wallet")
 router.register("moneywithdraw", views.MoneyWithdrawViewSet, basename="money-withdraw")
 
+
 cart_item_router = NestedDefaultRouter(router, "carts", lookup="cart")
 cart_item_router.register("cartitems", views.CartItemViewSet, basename="cart-item")
 
