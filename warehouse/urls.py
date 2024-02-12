@@ -7,7 +7,7 @@ router = DefaultRouter()
 router.register("genres", views.GenreViewSet, basename="genre")
 router.register("writers", views.WriterViewSet, basename="writer")
 router.register("books", views.BookViewSet, basename="book")
-
+router.register("bookitems", views.BookItemViewSetForSeller, basename="book-item")
 
 book_item_router = NestedDefaultRouter(router, "books", lookup="book")
 book_item_router.register("bookitems", views.BookItemViewSet, basename="book-item")

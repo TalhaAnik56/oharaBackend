@@ -47,12 +47,22 @@ class BaseBookItemSerializer(serializers.ModelSerializer):
 
 class BookItemSerializer(BaseBookItemSerializer):
     def create(self, validated_data):
-        book_id = self.context["book_id"]
+        # I have written this extra code so that we can use it in CreateBookItemSerializer too
+        book_id = self.context.get("book_id", None)
+        if book_id is not None:
+            try:
+                book = Book.objects.get(pk=book_id)
+            except Book.DoesNotExist:
+                raise serializers.ValidationError(
+                    {"error": "There is no book with this id"}
+                )
+        else:
+            book = self.validated_data["book"]
         user = self.context["user"]
         seller = user.seller
 
         (book_item, created) = BookItem.objects.get_or_create(
-            book_id=book_id, seller=seller, defaults=validated_data
+            book=book, seller=seller, defaults=validated_data
         )
 
         if not created:
@@ -82,6 +92,10 @@ class UpdateBookItemSerializer(BaseBookItemSerializer):
             raise serializers.ValidationError(
                 {"error": "This is not your book item.You can't update or delete this"}
             )
+
+
+class CreateBookItemSerializerOnlyForSeller(BookItemSerializer):
+    book = serializers.PrimaryKeyRelatedField(queryset=Book.objects.all())
 
 
 class GenreSerializer(serializers.ModelSerializer):
