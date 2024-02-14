@@ -153,8 +153,9 @@ class BookItemViewSetForSeller(ModelViewSet):
 
     pagination_class = CustomPagination
     permission_classes = [IsSeller]
-    filter_backends = [OrderingFilter]
+    filter_backends = [OrderingFilter, SearchFilter]
     ordering_fields = ["unit_price", "stock"]
+    search_fields = ["book__title", "book__writer__name"]
 
 
 class BookItemViewSet(ModelViewSet):
@@ -191,10 +192,6 @@ class BookItemViewSet(ModelViewSet):
     def get_serializer_context(self):
         return {"book_id": self.kwargs["book_pk"], "user": self.request.user}
 
-    pagination_class = CustomPagination
-    filter_backends = [OrderingFilter]
-    ordering_fields = ["unit_price", "stock"]
-
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         user = request.user
@@ -212,6 +209,10 @@ class BookItemViewSet(ModelViewSet):
                 },
                 status=status.HTTP_405_METHOD_NOT_ALLOWED,
             )
+
+    pagination_class = CustomPagination
+    filter_backends = [OrderingFilter]
+    ordering_fields = ["unit_price", "stock"]
 
 
 class FeedbackViewSet(ModelViewSet):
