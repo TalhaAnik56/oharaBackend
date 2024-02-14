@@ -47,7 +47,7 @@ class BaseBookItemSerializer(serializers.ModelSerializer):
 
 class BookItemSerializer(BaseBookItemSerializer):
     def create(self, validated_data):
-        # I have written this extra code so that we can use it in CreateBookItemSerializer too
+        # I have written this code in a way so that we can use it in CreateBookItemSerializer too
         book_id = self.context.get("book_id", None)
         if book_id is not None:
             try:
@@ -77,9 +77,14 @@ class UpdateBookItemSerializer(BaseBookItemSerializer):
     def save(self, **kwargs):
         book_item = self.instance
         user = self.context["user"]
-        does_exist = BookItem.objects.filter(
-            pk=book_item.id, seller=user.seller
-        ).exists()
+        isSeller = hasattr(user, "seller")
+
+        if isSeller:
+            does_exist = BookItem.objects.filter(
+                pk=book_item.id, seller=user.seller
+            ).exists()
+        else:
+            does_exist = False
 
         if user.is_staff or does_exist:
             book_item.description = self.validated_data["description"]
