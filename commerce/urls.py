@@ -6,6 +6,9 @@ from . import views
 router = DefaultRouter()
 router.register("carts", views.CartViewSet, basename="cart")
 router.register("orders", views.OrderViewSet, basename="order")
+router.register(
+    "ordersforsellers", views.OrderViewSetForSeller, basename="order-seller"
+)
 router.register("sellerwallets", views.SellerWalletViewSet, basename="seller-wallet")
 router.register("moneywithdraw", views.MoneyWithdrawViewSet, basename="money-withdraw")
 

@@ -126,9 +126,13 @@ class Book_Item_Serializer_For_Order_Item_Serializer(serializers.ModelSerializer
 class OrderItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderItem
-        fields = ["id", "book_item", "quantity", "unit_price"]
+        fields = ["id", "book_item", "quantity", "unit_price", "individual_total"]
 
     book_item = Book_Item_Serializer_For_Order_Item_Serializer()
+    individual_total = serializers.SerializerMethodField(method_name="calculated_price")
+
+    def calculated_price(self, order_item: OrderItem):
+        return order_item.unit_price * order_item.quantity
 
 
 class OrderSerializer(serializers.ModelSerializer):
@@ -289,6 +293,29 @@ class UpdateOrderSerializer(serializers.ModelSerializer):
             if order.order_status == "D":
                 order_delivered.send_robust(Order, order=order)
             return self.instance
+
+
+class OrderSerializerForSeller(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = [
+            "id",
+            "customer",
+            "payment_status",
+            "order_status",
+            "delivery_address",
+            "orderitem_set",
+            "subtotal",
+            "money_transferred",
+            "created_at",
+        ]
+
+    orderitem_set = OrderItemSerializer(many=True)
+    subtotal = serializers.SerializerMethodField(method_name="calculated_price")
+
+    def calculated_price(self, order):
+        prices = [item.quantity * item.unit_price for item in order.orderitem_set.all()]
+        return sum(prices)
 
 
 class SellerWalletSerializer(serializers.ModelSerializer):

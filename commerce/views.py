@@ -1,3 +1,4 @@
+from django.db.models import Prefetch
 from rest_framework.mixins import (
     CreateModelMixin,
     DestroyModelMixin,
@@ -9,9 +10,10 @@ from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet, ModelViewSet, ReadOnlyModelViewSet
 
 from community.models import Customer
-from widespread.permissions import IsAdminOrIsSeller
+from widespread.paginations import CustomPagination
+from widespread.permissions import IsAdminOrIsSeller, IsSeller
 
-from .models import Cart, CartItem, MoneyWithdraw, Order, SellerWallet
+from .models import Cart, CartItem, MoneyWithdraw, Order, OrderItem, SellerWallet
 from .serializers import (
     AddCartItemSerializer,
     CartItemSerializer,
@@ -19,6 +21,7 @@ from .serializers import (
     CreateOrderSerializer,
     MoneyWithdrawSerializer,
     OrderSerializer,
+    OrderSerializerForSeller,
     SellerWalletSerializer,
     UpdateCartItemSerializer,
     UpdateOrderSerializer,
@@ -99,6 +102,30 @@ class OrderViewSet(ModelViewSet):
         order = serializer.save()
         serializer = OrderSerializer(order)
         return Response(serializer.data)
+
+    pagination_class = CustomPagination
+
+
+class OrderViewSetForSeller(ReadOnlyModelViewSet):
+    def get_queryset(self):
+        queryset = (
+            Order.objects.filter(orderitem__book_item__seller=self.request.user.seller)
+            .distinct()
+            .prefetch_related(
+                Prefetch(
+                    "orderitem_set",
+                    queryset=OrderItem.objects.filter(
+                        book_item__seller=self.request.user.seller
+                    ).select_related("book_item__book", "book_item__seller"),
+                )
+            )
+            .all()
+        )
+        return queryset
+
+    serializer_class = OrderSerializerForSeller
+    pagination_class = CustomPagination
+    permission_classes = [IsSeller]
 
 
 class SellerWalletViewSet(ReadOnlyModelViewSet):
