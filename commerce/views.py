@@ -1,4 +1,5 @@
 from django.db.models import Prefetch
+from rest_framework.decorators import action
 from rest_framework.mixins import (
     CreateModelMixin,
     DestroyModelMixin,
@@ -122,6 +123,20 @@ class OrderViewSetForSeller(ReadOnlyModelViewSet):
             .all()
         )
         return queryset
+
+    @action(detail=False)
+    def order_due(self, request):
+        queryset = self.get_queryset()
+        queryset = queryset.exclude(order_status="D")
+        serializer = OrderSerializerForSeller(queryset, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False)
+    def order_delivered(self, request):
+        queryset = self.get_queryset()
+        queryset = queryset.filter(order_status="D")
+        serializer = OrderSerializerForSeller(queryset, many=True)
+        return Response(serializer.data)
 
     serializer_class = OrderSerializerForSeller
     pagination_class = CustomPagination
