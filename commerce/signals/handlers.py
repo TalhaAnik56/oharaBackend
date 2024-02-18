@@ -3,7 +3,7 @@ from django.db.models.signals import post_save
 from django.dispatch import receiver
 
 from commerce.models import Order, OrderItem, SellerWallet
-from commerce.signals import order_delivered
+from commerce.signals import order_delivered, seller_confirmed
 from community.models import Seller
 
 
@@ -18,7 +18,6 @@ def create_seller_wallet_for_new_seller(sender, **kwargs):
 def transfer_money_to_seller_wallet(sender, **kwargs):
     with transaction.atomic():
         order = kwargs["order"]
-        print("I want you to see this", order.id)
         if order.money_transferred:
             return
 
@@ -35,4 +34,18 @@ def transfer_money_to_seller_wallet(sender, **kwargs):
             seller_wallet.save()
 
         order.money_transferred = True
+        order.save()
+
+
+@receiver(seller_confirmed, sender=Order)
+def order_is_being_confirmed(sender, **kwargs):
+    with transaction.atomic():
+        order = kwargs["order"]
+        order_items = OrderItem.objects.filter(order_id=order.id)
+
+        for item in order_items:
+            if item.confirmed_by_seller == False:
+                return
+
+        order.order_status = "C"
         order.save()

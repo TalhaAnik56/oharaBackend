@@ -45,10 +45,12 @@ class Order(models.Model):
     DELIVERED = "D"
     RECEIVED = "R"
     DELIVERY_ONGOING = "O"
+    # We are using failed instead of cancelled.Because for that we have to use C, but we already have a C for Confirmed.
     FAILED = "F"
 
     PAYMENT_STATUS = [(PENDING, "pending"), (RECEIVED, "received")]
     ORDER_STATUS = [
+        (PENDING, "pending"),
         (CONFIRMED, "confirmed"),
         (DELIVERY_ONGOING, "delivery ongoing"),
         (DELIVERED, "delivered"),
@@ -59,9 +61,7 @@ class Order(models.Model):
     payment_status = models.CharField(
         max_length=1, choices=PAYMENT_STATUS, default=PENDING
     )
-    order_status = models.CharField(
-        max_length=1, choices=ORDER_STATUS, default=CONFIRMED
-    )
+    order_status = models.CharField(max_length=1, choices=ORDER_STATUS, default=PENDING)
     delivery_fee = models.PositiveSmallIntegerField(
         default=0,
         validators=[
@@ -87,6 +87,8 @@ class OrderItem(models.Model):
     )
     unit_price = models.PositiveSmallIntegerField()
     order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    confirmed_by_seller = models.BooleanField(default=False)
+    transferred_to_inventory = models.BooleanField(default=False)
 
 
 class SellerWallet(models.Model):

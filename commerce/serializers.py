@@ -7,7 +7,7 @@ from warehouse.models import BookItem
 from warehouse.signals import stock_out
 
 from .models import Cart, CartItem, MoneyWithdraw, Order, OrderItem, SellerWallet
-from .signals import order_delivered
+from .signals import order_delivered, seller_confirmed
 
 
 class SimpleBookItemSerializer(serializers.ModelSerializer):
@@ -295,6 +295,19 @@ class UpdateOrderSerializer(serializers.ModelSerializer):
             return self.instance
 
 
+class OrderItemSerializerForSeller(OrderItemSerializer):
+    class Meta(OrderItemSerializer.Meta):
+        fields = [
+            "id",
+            "book_item",
+            "quantity",
+            "unit_price",
+            "individual_total",
+            "confirmed_by_seller",
+            "transferred_to_inventory",
+        ]
+
+
 class OrderSerializerForSeller(serializers.ModelSerializer):
     class Meta:
         model = Order
@@ -310,12 +323,37 @@ class OrderSerializerForSeller(serializers.ModelSerializer):
             "created_at",
         ]
 
-    orderitem_set = OrderItemSerializer(many=True)
+    orderitem_set = OrderItemSerializerForSeller(many=True)
     subtotal = serializers.SerializerMethodField(method_name="calculated_price")
 
     def calculated_price(self, order):
         prices = [item.quantity * item.unit_price for item in order.orderitem_set.all()]
         return sum(prices)
+
+
+class UpdateOrderSerializerForSeller(serializers.ModelSerializer):
+    class Meta:
+        model = OrderItem
+        fields = ["confirmed_by_seller"]
+
+    def save(self, **kwargs):
+        with transaction.atomic():
+            order = self.instance
+            confirmed_by_seller = self.validated_data["confirmed_by_seller"]
+
+            for item in order.orderitem_set.all():
+                if item.confirmed_by_seller == True:
+                    raise serializers.ValidationError(
+                        {
+                            "error": "You have confirmed this order already. Now it is not possible to undo it."
+                        }
+                    )
+                item.confirmed_by_seller = confirmed_by_seller
+                item.save()
+
+            seller_confirmed.send_robust(Order, order=order)
+            self.instance = order
+            return self.instance
 
 
 class SellerWalletSerializer(serializers.ModelSerializer):

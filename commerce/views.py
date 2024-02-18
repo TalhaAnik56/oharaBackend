@@ -5,6 +5,7 @@ from rest_framework.mixins import (
     DestroyModelMixin,
     ListModelMixin,
     RetrieveModelMixin,
+    UpdateModelMixin,
 )
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
@@ -26,6 +27,7 @@ from .serializers import (
     SellerWalletSerializer,
     UpdateCartItemSerializer,
     UpdateOrderSerializer,
+    UpdateOrderSerializerForSeller,
 )
 
 # Create your views here.
@@ -75,9 +77,13 @@ class OrderViewSet(ModelViewSet):
 
     def get_queryset(self):
         user = self.request.user
-        queryset = Order.objects.prefetch_related(
-            "orderitem_set__book_item__book", "orderitem_set__book_item__seller"
-        ).all()
+        queryset = (
+            Order.objects.prefetch_related(
+                "orderitem_set__book_item__book", "orderitem_set__book_item__seller"
+            )
+            .select_related("customer")
+            .all()
+        )
         if user.is_staff:
             return queryset
         customer = Customer.objects.get(user_id=user.id)
@@ -107,10 +113,25 @@ class OrderViewSet(ModelViewSet):
     pagination_class = CustomPagination
 
 
-class OrderViewSetForSeller(ReadOnlyModelViewSet):
+class OrderViewSetForSeller(
+    GenericViewSet, ListModelMixin, RetrieveModelMixin, UpdateModelMixin
+):
+    http_method_names = ["get", "patch", "head", "options"]
+    pagination_class = CustomPagination
+
     def get_queryset(self):
+        if self.request.user.is_staff:
+            queryset = (
+                Order.objects.prefetch_related(
+                    "orderitem_set__book_item__book", "orderitem_set__book_item__seller"
+                )
+                .select_related("customer")
+                .all()
+            )
+            return queryset
         queryset = (
             Order.objects.filter(orderitem__book_item__seller=self.request.user.seller)
+            .select_related("customer")
             .distinct()
             .prefetch_related(
                 Prefetch(
@@ -123,6 +144,24 @@ class OrderViewSetForSeller(ReadOnlyModelViewSet):
             .all()
         )
         return queryset
+
+    def get_permissions(self):
+        if self.request.method == "GET":
+            return [IsAdminOrIsSeller()]
+        return [IsSeller()]
+
+    def get_serializer_class(self):
+        if self.request.method == "PATCH":
+            return UpdateOrderSerializerForSeller
+        return OrderSerializerForSeller
+
+    def update(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = UpdateOrderSerializerForSeller(instance, data=request.data)
+        serializer.is_valid(raise_exception=True)
+        order = serializer.save()
+        serializer = OrderSerializerForSeller(order)
+        return Response(serializer.data)
 
     @action(detail=False)
     def order_due(self, request):
@@ -137,10 +176,6 @@ class OrderViewSetForSeller(ReadOnlyModelViewSet):
         queryset = queryset.filter(order_status="D")
         serializer = OrderSerializerForSeller(queryset, many=True)
         return Response(serializer.data)
-
-    serializer_class = OrderSerializerForSeller
-    pagination_class = CustomPagination
-    permission_classes = [IsSeller]
 
 
 class SellerWalletViewSet(ReadOnlyModelViewSet):
