@@ -234,6 +234,7 @@ class CreateOrderSerializer(serializers.Serializer):
                     unit_price=item.unit_price,
                 )
                 item.book_item.stock -= quantity
+                item.book_item.sold_units += quantity
                 item.book_item.save()
                 # If stock becomes zero we will fire a signal
                 if item.book_item.stock == 0:

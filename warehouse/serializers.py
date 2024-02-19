@@ -16,7 +16,6 @@ class BookSerializer(serializers.ModelSerializer):
             "lowest_price",
             "created_at",
             "average_rating",
-            "total_sold_units",
             "book_item_count",
             "feedback_count",
         ]
@@ -27,7 +26,6 @@ class BookSerializer(serializers.ModelSerializer):
     average_rating = serializers.DecimalField(
         max_digits=6, decimal_places=2, read_only=True
     )
-    total_sold_units = serializers.IntegerField(read_only=True)
     book_item_count = serializers.IntegerField(read_only=True)
     feedback_count = serializers.IntegerField(read_only=True)
 
@@ -36,6 +34,28 @@ class BookSerializer(serializers.ModelSerializer):
         representation["writer"] = book.writer.name
         representation["genre"] = book.genre.title
         return representation
+
+
+class TopSellingBookSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Book
+        fields = [
+            "id",
+            "title",
+            "publication",
+            "writer",
+            "genre",
+            "description",
+            "lowest_price",
+            "created_at",
+            "total_sold_units",
+        ]
+
+    lowest_price = serializers.DecimalField(
+        max_digits=6, decimal_places=2, read_only=True
+    )
+
+    total_sold_units = serializers.IntegerField(read_only=True)
 
 
 class SimpleBookSerializer(serializers.ModelSerializer):

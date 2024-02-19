@@ -18,6 +18,7 @@ from .serializers import (
     CreateBookItemSerializerOnlyForSeller,
     FeedbackSerializer,
     GenreSerializer,
+    TopSellingBookSerializer,
     UpdateBookItemSerializer,
     WriterSerializer,
 )
@@ -79,7 +80,6 @@ class BookViewSet(ModelViewSet):
             .annotate(feedback_count=Count("feedback", distinct=True))
             .annotate(lowest_price=Min("bookitem__unit_price"))
             .annotate(average_rating=Avg("feedback__rating"))
-            .annotate(total_sold_units=Sum("bookitem__sold_units"))
         )
 
         return queryset
@@ -116,9 +116,15 @@ class BookViewSet(ModelViewSet):
 
     @action(detail=False)
     def top_selling(self, request):
-        queryset = self.get_queryset()
-        queryset = queryset.order_by("-total_sold_units")
-        serializer = self.get_serializer(queryset, many=True)
+        queryset = (
+            Book.objects.all()
+            .select_related("writer")
+            .select_related("genre")
+            .annotate(total_sold_units=Sum("bookitem__sold_units"))
+            .annotate(lowest_price=Min("bookitem__unit_price"))
+            .order_by("-total_sold_units")
+        )
+        serializer = TopSellingBookSerializer(queryset, many=True)
         return Response(serializer.data)
 
     def destroy(self, request, *args, **kwargs):
