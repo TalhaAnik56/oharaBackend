@@ -120,6 +120,8 @@ class OrderViewSetForSeller(
     pagination_class = CustomPagination
 
     def get_queryset(self):
+        # I know this is redundant. Overriding the queryset so that, admin can see which order items are confirmed by which seller and
+        # is the book item transferred into the inventory or not portraying which seller is causing delay form the book being delivered.
         if self.request.user.is_staff:
             queryset = (
                 Order.objects.prefetch_related(

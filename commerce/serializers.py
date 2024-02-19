@@ -351,6 +351,7 @@ class UpdateOrderSerializerForSeller(serializers.ModelSerializer):
                 item.confirmed_by_seller = confirmed_by_seller
                 item.save()
 
+            # Later, We will add a condition on what if seller doesn't confirm.
             seller_confirmed.send_robust(Order, order=order)
             self.instance = order
             return self.instance

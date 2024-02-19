@@ -31,6 +31,7 @@ class Book(models.Model):
     publication = models.CharField(max_length=25)
     writer = models.ForeignKey(Writer, on_delete=models.PROTECT)
     genre = models.ForeignKey(Genre, on_delete=models.PROTECT)
+    description = models.CharField(max_length=1500)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -43,7 +44,6 @@ class Book(models.Model):
 class BookItem(models.Model):
     book = models.ForeignKey(Book, on_delete=models.PROTECT)
     seller = models.ForeignKey(Seller, on_delete=models.PROTECT)
-    description = models.CharField(max_length=1500)
     unit_price = models.DecimalField(max_digits=6, decimal_places=2)
     stock = models.PositiveIntegerField()
     created_at = models.DateTimeField(auto_now_add=True)

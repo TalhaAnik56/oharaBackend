@@ -12,7 +12,7 @@ class BookSerializer(serializers.ModelSerializer):
             "publication",
             "writer",
             "genre",
-            "created_at",
+            "description" "created_at",
             "book_item_count",
             "feedback_count",
         ]
@@ -35,7 +35,6 @@ class BaseBookItemSerializer(serializers.ModelSerializer):
             "id",
             "book",
             "seller",
-            "description",
             "unit_price",
             "stock",
             "created_at",
@@ -87,7 +86,6 @@ class UpdateBookItemSerializer(BaseBookItemSerializer):
             does_exist = False
 
         if user.is_staff or does_exist:
-            book_item.description = self.validated_data["description"]
             book_item.unit_price = self.validated_data["unit_price"]
             book_item.stock = self.validated_data["stock"]
             book_item.save()
