@@ -12,7 +12,8 @@ class BookSerializer(serializers.ModelSerializer):
             "publication",
             "writer",
             "genre",
-            "description" "created_at",
+            "description",
+            "created_at",
             "book_item_count",
             "feedback_count",
         ]
@@ -25,6 +26,14 @@ class BookSerializer(serializers.ModelSerializer):
         representation["writer"] = book.writer.name
         representation["genre"] = book.genre.title
         return representation
+
+
+class SimpleBookSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Book
+        fields = ["id", "title", "writer"]
+
+    writer = serializers.StringRelatedField(read_only=True)
 
 
 # This class will only be used for inheritance.
@@ -40,13 +49,13 @@ class BaseBookItemSerializer(serializers.ModelSerializer):
             "created_at",
         ]
 
-    book = BookSerializer(read_only=True)
+    book = SimpleBookSerializer(read_only=True)
     seller = serializers.StringRelatedField(read_only=True)
 
 
 class BookItemSerializer(BaseBookItemSerializer):
     def create(self, validated_data):
-        # I have written this code in a way so that we can use it in CreateBookItemSerializer too
+        # I have written this code in a way so that we can use it in CreateBookItemSerializerOnlyForSeller too
         book_id = self.context.get("book_id", None)
         if book_id is not None:
             try:
@@ -72,6 +81,10 @@ class BookItemSerializer(BaseBookItemSerializer):
         return book_item
 
 
+class CreateBookItemSerializerOnlyForSeller(BookItemSerializer):
+    book = serializers.PrimaryKeyRelatedField(queryset=Book.objects.all())
+
+
 class UpdateBookItemSerializer(BaseBookItemSerializer):
     def save(self, **kwargs):
         book_item = self.instance
@@ -95,10 +108,6 @@ class UpdateBookItemSerializer(BaseBookItemSerializer):
             raise serializers.ValidationError(
                 {"error": "This is not your book item.You can't update or delete this"}
             )
-
-
-class CreateBookItemSerializerOnlyForSeller(BookItemSerializer):
-    book = serializers.PrimaryKeyRelatedField(queryset=Book.objects.all())
 
 
 class GenreSerializer(serializers.ModelSerializer):
