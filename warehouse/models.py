@@ -46,6 +46,7 @@ class BookItem(models.Model):
     seller = models.ForeignKey(Seller, on_delete=models.PROTECT)
     unit_price = models.DecimalField(max_digits=6, decimal_places=2)
     stock = models.PositiveIntegerField()
+    sold_units = models.PositiveIntegerField(default=0)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -62,7 +63,7 @@ class Feedback(models.Model):
         max_digits=4,
         decimal_places=2,
         validators=[
-            MinValueValidator(1, "Rating cannot be less than 1"),
+            MinValueValidator(0, "Rating cannot be less than 0"),
             MaxValueValidator(10, "Rating cannot exceed 10"),
         ],
         null=True,

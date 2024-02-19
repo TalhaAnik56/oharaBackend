@@ -1,7 +1,8 @@
-from django.db.models import Count
+from django.db.models import Avg, Count, Min, Sum
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
+from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.permissions import AllowAny, IsAdminUser
 from rest_framework.response import Response
@@ -76,7 +77,9 @@ class BookViewSet(ModelViewSet):
             .select_related("genre")
             .annotate(book_item_count=Count("bookitem", distinct=True))
             .annotate(feedback_count=Count("feedback", distinct=True))
-            .order_by("title")
+            .annotate(lowest_price=Min("bookitem__unit_price"))
+            .annotate(average_rating=Avg("feedback__rating"))
+            .annotate(total_sold_units=Sum("bookitem__sold_units"))
         )
 
         return queryset
@@ -95,7 +98,28 @@ class BookViewSet(ModelViewSet):
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ["genre", "writer"]
     search_fields = ["title", "writer__name", "genre__title"]
+    # we will use the created_at as freshly baked
     ordering_fields = ["created_at"]
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        queryset = queryset.order_by("title")
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False)
+    def top_rated(self, request):
+        queryset = self.get_queryset()
+        queryset = queryset.order_by("-average_rating")
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False)
+    def top_selling(self, request):
+        queryset = self.get_queryset()
+        queryset = queryset.order_by("-total_sold_units")
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
 
     def destroy(self, request, *args, **kwargs):
         book = get_object_or_404(Book, pk=kwargs["pk"])
